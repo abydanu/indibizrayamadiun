@@ -1,70 +1,194 @@
-import React from 'react'
+"use client"
 
-const AdminDashboard = () => {
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/ui/card'
+import { Tabs, TabsContent } from '@/shared/ui/tabs'
+import { Header } from '@/features/smartsync-dashboard/components/header'
+import { Main } from '@/features/smartsync-dashboard/components/main'
+import { TopNav } from '@/features/smartsync-dashboard/components/top-nav'
+import { ThemeSwitch } from '@/shared/components/theme-switch'
+import { Overview } from '@/features/smartsync-dashboard/components/dashboard/overview'
+import { RecentSales } from '@/features/smartsync-dashboard/components/dashboard/recent-sales'
+
+const Dashboard = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Total Form</h2>
-            <p className="text-3xl font-bold text-blue-600">1,234</p>
-            <p className="text-gray-600">Form yang masuk</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Agency Aktif</h2>
-            <p className="text-3xl font-bold text-green-600">45</p>
-            <p className="text-gray-600">Agency terdaftar</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Pending</h2>
-            <p className="text-3xl font-bold text-yellow-600">23</p>
-            <p className="text-gray-600">Menunggu review</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Selesai</h2>
-            <p className="text-3xl font-bold text-purple-600">1,211</p>
-            <p className="text-gray-600">Form selesai</p>
+    <>  
+      {/* ===== Top Heading ===== */}
+      <Header fixed>
+        <TopNav links={topNav} />
+        <div className='ms-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+        </div>
+      </Header>
+
+      {/* ===== Main ===== */}
+      <Main>
+        <div className='mb-2 flex items-center justify-between space-y-2'>
+          <h1 className='text-2xl font-extrabold tracking-tight'>Dashboard</h1>
+          <div className='flex items-center space-x-2'>
           </div>
         </div>
-        
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Data Form Terbaru</h2>
-            <div className="space-y-4">
-              <div className="border-l-4 border-blue-500 pl-4">
-                <p className="font-medium">Toko Barokah Ponorogo</p>
-                <p className="text-sm text-gray-600">2 jam yang lalu</p>
-              </div>
-              <div className="border-l-4 border-green-500 pl-4">
-                <p className="font-medium">Warung Makan Sederhana</p>
-                <p className="text-sm text-gray-600">4 jam yang lalu</p>
-              </div>
-              <div className="border-l-4 border-yellow-500 pl-4">
-                <p className="font-medium">Kedai Kopi Mantap</p>
-                <p className="text-sm text-gray-600">6 jam yang lalu</p>
-              </div>
+        <Tabs
+          orientation='vertical'
+          defaultValue='overview'
+          className='space-y-4'
+        >
+          <TabsContent value='overview' className='space-y-4'>
+            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>
+                    Total Revenue
+                  </CardTitle>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    className='text-muted-foreground h-4 w-4'
+                  >
+                    <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>$45,231.89</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +20.1% from last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>
+                    Subscriptions
+                  </CardTitle>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    className='text-muted-foreground h-4 w-4'
+                  >
+                    <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+                    <circle cx='9' cy='7' r='4' />
+                    <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>+2350</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +180.1% from last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>Sales</CardTitle>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    className='text-muted-foreground h-4 w-4'
+                  >
+                    <rect width='20' height='14' x='2' y='5' rx='2' />
+                    <path d='M2 10h20' />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>+12,234</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +19% from last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>
+                    Active Now
+                  </CardTitle>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    className='text-muted-foreground h-4 w-4'
+                  >
+                    <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>+573</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +201 since last hour
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Aksi Cepat</h2>
-            <div className="space-y-3">
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                Lihat Semua Form
-              </button>
-              <button className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
-                Export Data
-              </button>
-              <button className="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700">
-                Kelola Agency
-              </button>
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
+              <Card className='col-span-1 lg:col-span-4'>
+                <CardHeader>
+                  <CardTitle>Overview</CardTitle>
+                </CardHeader>
+                <CardContent className='ps-2'>
+                  <Overview />
+                </CardContent>
+              </Card>
+              <Card className='col-span-1 lg:col-span-3'>
+                <CardHeader>
+                  <CardTitle>Recent Sales</CardTitle>
+                  <CardDescription>
+                    You made 265 sales this month.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RecentSales />
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          </TabsContent>
+        </Tabs>
+      </Main>
+    </>
   )
 }
 
-export default AdminDashboard
+const topNav = [
+  {
+    title: 'Dasbor',
+    href: '/admin/dashboard',
+    isActive: true,
+    disabled: true,
+  },
+  {
+    title: 'Agen',
+    href: '/admin/agencies',
+    isActive: false,
+    disabled: false,
+  },
+  {
+    title: 'Pengaturan',
+    href: '/admin/settings',
+    isActive: false,
+    disabled: false,
+  },
+]
+
+export default Dashboard;

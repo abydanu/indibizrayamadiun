@@ -7,10 +7,10 @@ const NotFound = () => {
   const navigate = useRouter()
   
   return (
-    <div className='h-svh'>
+    <div className='h-svh bg-background'>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
         <h1 className='text-[7rem] leading-tight font-bold text-red-700'>404</h1>
-        <span className='font-medium'>Ups! Halaman tidak ditemukan!</span>
+        <span className='font-medium text-foreground'>Ups! Halaman tidak ditemukan!</span>
         <p className='text-muted-foreground text-center'>
           Sepertinya halaman yang Anda cari <br />
           tidak ada atau mungkin telah dihapus.

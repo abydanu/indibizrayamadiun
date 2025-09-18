@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  crossOrigin: "anonymous",
+  crossOrigin: 'anonymous',
   async headers() {
     return [
       {
@@ -9,12 +9,12 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Permissions-Policy',
-            value: 'geolocation=*'
-          }
-        ]
-      }
-    ]
-  }
+            value: 'geolocation=*',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

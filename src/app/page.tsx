@@ -1,6 +1,6 @@
-import SmartForm from '@/features/smartsync-form/components/SmartSyncForm'
-import Navbar from '@/shared/components/Navbar'
-import Footer from '@/shared/components/Footer'
+import SmartForm from '@/features/smartsync-form/components/smartsync-form'
+import Navbar from '@/shared/components/custom/Navbar'
+import Footer from '@/shared/components/custom/Footer'
 
 export default function Home() {
   return (
@@ -9,7 +9,8 @@ export default function Home() {
       <section className="pt-24 pb-24 flex justify-center">
         <div className="w-full max-w-6xl px-6">
           <h1 className="md:text-2xl text-xl font-extrabold text-center mb-8">
-            INPUT INDIBIZ WITEL MADIUN
+            INPUT INDIBIZ {" "}
+            <span className='md:inline block'>TELKOM MADIUN RAYA</span>
           </h1>
           <SmartForm />
         </div>
