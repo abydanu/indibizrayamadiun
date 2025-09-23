@@ -20,6 +20,7 @@ import {
   useSidebar,
 } from '@/shared/ui/sidebar';
 import { AuthService } from '@/features/smartsync-login/services/authService';
+import { sidebarData } from '../helpers/sidebar-data-admin';
 import Cookies from 'js-cookie';
 
 type User = {
@@ -29,7 +30,9 @@ type User = {
 export function NavUser() {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const [user, setUser] = useState<User>({ username: '' });
+  const [user, setUser] = useState<User>({ 
+    username: 'Admin'
+  });
 
   const getTokenFromCookie = () => Cookies.get('token') || null;
 
@@ -49,7 +52,9 @@ export function NavUser() {
     if (token) {
       const payload = parseJwt(token);
       if (payload?.username) {
-        setUser({ username: payload.username });
+        setUser({ 
+          username: payload.username
+        });
       }
     }
   }, []);
@@ -71,7 +76,6 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                {/* fallback pakai huruf depan username */}
                 <AvatarImage src="" alt={user.username} />
                 <AvatarFallback className="rounded-lg">
                   {user.username.substring(0, 2).toUpperCase()}

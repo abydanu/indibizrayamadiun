@@ -11,17 +11,44 @@ import {
   BreadcrumbSeparator,
 } from '@/shared/ui/breadcrumb'
 
-interface BreadcrumbItem {
+interface BreadcrumbItemType {
   title: string
   href?: string
   isActive?: boolean
 }
 
-interface PageBreadcrumbProps {
-  items: BreadcrumbItem[]
+const breadcrumbMap: Record<string, string> = {
+  dashboard: 'Dasbor',
+  paket: 'Paket',
+  'paket-indibiz': 'Paket Indibiz',
+  'kategori-paket': 'Kategori Paket',
+  promo: 'Promo',
+  datel: 'Datel',
+  agen: 'Agen',
 }
 
-export function PageBreadcrumb({ items }: PageBreadcrumbProps) {
+export function PageBreadcrumb() {
+  const pathname = usePathname()
+  const segments = pathname.split('/').filter(Boolean).filter(seg => seg !== 'admin')
+
+  let items: BreadcrumbItemType[] = []
+
+  if (segments.length === 0 || (segments.length === 1 && segments[0] === 'dasbor')) {
+    items = [{ title: 'Dasbor', isActive: true }]
+  } else {
+    items = [
+      { title: 'Dasbor', href: '/admin/dashboard' },
+      ...segments.map((segment, index) => {
+        const isLast = index === segments.length - 1
+        return {
+          title: breadcrumbMap[segment] || segment,
+          href: isLast ? undefined : '/' + segments.slice(0, index + 1).join('/'),
+          isActive: isLast,
+        }
+      }),
+    ]
+  }
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -42,34 +69,4 @@ export function PageBreadcrumb({ items }: PageBreadcrumbProps) {
       </BreadcrumbList>
     </Breadcrumb>
   )
-}
-
-// Helper function to generate breadcrumb items based on pathname
-export function generateBreadcrumbItems(pathname: string): BreadcrumbItem[] {
-  const segments = pathname.split('/').filter(Boolean)
-  const items: BreadcrumbItem[] = []
-
-  // Always start with Dashboard
-  if (segments.includes('admin')) {
-    items.push({ title: 'Dashboard', href: '/admin/dashboard' })
-  } else if (segments.includes('agency')) {
-    items.push({ title: 'Dashboard', href: '/agency/dashboard' })
-  }
-
-  // Add specific page items based on path
-  if (segments.includes('orders')) {
-    items.push({ title: 'Orders', isActive: true })
-  } else if (segments.includes('customers')) {
-    items.push({ title: 'Customers', isActive: true })
-  } else if (segments.includes('kategori-paket')) {
-    items.push({ title: 'Kategori Paket', isActive: true })
-  } else if (segments.includes('agencies')) {
-    items.push({ title: 'Agencies', isActive: true })
-  } else if (segments.includes('settings')) {
-    items.push({ title: 'Settings', isActive: true })
-  } else if (segments.includes('dashboard')) {
-    items.push({ title: 'Dashboard', isActive: true })
-  }
-
-  return items
 }

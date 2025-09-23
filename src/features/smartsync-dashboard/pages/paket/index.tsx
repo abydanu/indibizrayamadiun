@@ -1,106 +1,56 @@
-"use client"
+'use client';
 
-import * as React from 'react'
-import { Header } from '@/features/smartsync-dashboard/components/header'
-import { Main } from '@/features/smartsync-dashboard/components/main'
-import { Separator } from '@/shared/ui/separator'
-import { ThemeSwitch } from '@/shared/components/theme-switch'
-import { PageBreadcrumb, generateBreadcrumbItems } from '@/shared/components/page-breadcrumb'
+import * as React from 'react';
+import { Main } from '@/features/smartsync-dashboard/components/main';
+import { PageHeader, PageTitle } from '@/shared/components/page-layout';
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from "@tanstack/react-table"
-import { ChevronDown, MoreHorizontal, Plus, Pencil, Trash2, Settings2 } from "lucide-react"
-import { Button } from "@/shared/ui/button"
-import { Checkbox } from "@/shared/ui/checkbox"
+  DataTable,
+  TableSkeleton,
+  ActionDropdown,
+} from '@/shared/components/data-table';
+import { FormDialog, FormField, MultiSelect, type MultiSelectOption } from '@/shared/components/forms';
+import { ColumnDef } from '@tanstack/react-table';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Badge } from '@/shared/ui/badge';
+import type {
+  Paket,
+  PaketApiResponse,
+  Kategori,
+  Promo,
+} from '../../types/paket';
+import api from '@/lib/api/useFetch';
+import { toast } from 'sonner';
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu"
-import { Input } from "@/shared/ui/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog"
-import { Label } from "@/shared/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select"
-import { Badge } from "@/shared/ui/badge"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/ui/pagination"
-import { Textarea } from "@/shared/ui/textarea"
-import { 
-  paketData, 
-  kategoriPaketData, 
-  promoData, 
-  getKategoriById, 
-  getPromoById, 
-  calculateFinalPrice,
-  type Paket 
-} from '@/features/smartsync-dashboard/data/paket-data'
+  HybridDataTable,
+  ServerPaginationState,
+} from '@/shared/components/data-table/hybrid-data-table';
 
-const data: Paket[] = paketData
+// Skeleton configuration untuk tabel paket
+const paketSkeletonColumns = [
+  { width: 'w-4', height: 'h-4' }, // checkbox
+  { width: 'w-[150px]', height: 'h-4' }, // nama
+  { width: 'w-[80px]', height: 'h-4' }, // bandwidth
+  { width: 'w-[100px]', height: 'h-4' }, // harga paket
+  { width: 'w-[100px]', height: 'h-4' }, // harga psb
+  { width: 'w-[60px]', height: 'h-4' }, // ppn
+  { width: 'w-[120px]', height: 'h-6', rounded: true }, // kategori
+  { width: 'w-[120px]', height: 'h-6', rounded: true }, // promo
+  { width: 'w-[100px]', height: 'h-4' }, // harga total
+  { width: 'w-8', height: 'h-8' }, // actions
+];
 
 export const createColumns = (
   handleEditPaket: (paket: Paket) => void,
-  handleDeletePaket: (paketId: string) => void
+  handleDeletePaket: (paketId: string) => void,
+  isSubmitting: boolean
 ): ColumnDef<Paket>[] => [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -117,736 +67,591 @@ export const createColumns = (
     enableHiding: false,
   },
   {
-    accessorKey: "nama_paket",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-extrabold"
-        >
-          Nama Paket
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("nama_paket")}</div>,
+    accessorKey: 'nama',
+    header: () => <span className="font-extrabold">Nama Paket</span>,
+    cell: ({ row }) => <div>{row.getValue('nama')}</div>,
   },
   {
-    accessorKey: "bandwith_paket",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-extrabold"
-        >
-          Bandwidth
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("bandwith_paket")} Mbps</div>,
+    accessorKey: 'bandwith',
+    header: () => <span className="font-extrabold">Bandwidth</span>,
+    cell: ({ row }) => <div>{row.getValue('bandwith')} Mbps</div>,
   },
   {
-    accessorKey: "harga_paket",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-extrabold"
-        >
-          Harga Paket
-        </Button>
-      )
-    },
+    accessorKey: 'price',
+    header: () => <span className="font-extrabold">Harga Paket</span>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("harga_paket"))
-      const formatted = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-      }).format(amount)
-      return <div>{formatted}</div>
+      const amount = parseInt(row.getValue('price') as string);
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(amount);
+      return <div>{formatted}</div>;
     },
   },
   {
-    accessorKey: "harga_psb",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-extrabold"
-        >
-          Harga PSB
-        </Button>
-      )
-    },
+    accessorKey: 'price_psb',
+    header: () => <span className="font-extrabold">Harga PSB</span>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("harga_psb"))
-      const formatted = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-      }).format(amount)
-      return <div>{formatted}</div>
+      const amount = parseInt(row.getValue('price_psb') as string);
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(amount);
+      return <div>{formatted}</div>;
     },
   },
   {
-    accessorKey: "harga_pkt_ppn",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-extrabold"
-        >
-          Harga + PPN
-        </Button>
-      )
-    },
+    accessorKey: 'ppn',
+    header: () => <span className="font-extrabold">PPN (%)</span>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("harga_pkt_ppn"))
-      const formatted = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-      }).format(amount)
-      return <div>{formatted}</div>
+      const ppn = row.getValue('ppn') as number;
+      return <div>{ppn}%</div>;
     },
   },
   {
-    accessorKey: "id_kategori",
+    accessorKey: 'categories',
     header: () => <span className="font-extrabold">Kategori</span>,
     cell: ({ row }) => {
-      const kategoriId = row.getValue("id_kategori") as string
-      const kategori = getKategoriById(kategoriId)
-      return <div>{kategori?.nama_kategori || 'Unknown'}</div>
+      const categories = row.getValue('categories') as Kategori[];
+      return (
+        <div className="flex flex-wrap gap-1">
+          {categories.map((kategori) => (
+            <Badge key={kategori.id} variant="outline" className="text-xs">
+              {kategori.nama}
+            </Badge>
+          ))}
+        </div>
+      );
     },
   },
   {
-    accessorKey: "id_promo",
+    accessorKey: 'applied_promos',
     header: () => <span className="font-extrabold">Promo</span>,
     cell: ({ row }) => {
-      const promoId = row.getValue("id_promo") as string
-      const promo = getPromoById(promoId)
+      const promos = row.getValue('applied_promos') as Promo[];
+      if (!promos || promos.length === 0) {
+        return (
+          <Badge variant="outline" className="text-xs bg-gray-50">
+            Tidak ada promo
+          </Badge>
+        );
+      }
       return (
-        <div className="flex items-center gap-2">
-          <span>{promo?.nama_promo || 'No Promo'}</span>
-          {promo && promo.status_promo === 'active' && (
-            <Badge variant="outline" className="text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50">
-              -{promo.diskon}%
+        <div className="flex flex-wrap gap-1">
+          {promos.map((promo) => (
+            <Badge
+              key={promo.id}
+              variant="outline"
+              className="text-xs bg-green-50 text-green-700 border-green-200"
+            >
+              {promo.nama} ({promo.diskon}%)
             </Badge>
-          )}
+          ))}
         </div>
-      )
+      );
     },
   },
   {
-    accessorKey: "harga_final",
-    header: () => <span className="font-extrabold">Harga Final</span>,
+    accessorKey: 'final_price',
+    header: () => <span className="font-extrabold">Harga Total</span>,
     cell: ({ row }) => {
-      const paket = row.original
-      const finalPrice = calculateFinalPrice(paket)
-      const formatted = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-      }).format(finalPrice)
-      return <div className="font-medium text-green-600">{formatted}</div>
+      const amount = parseInt(row.getValue('final_price') as string);
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(amount);
+      return <div>{formatted}</div>;
     },
   },
   {
-    accessorKey: "created_at",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-extrabold"
-        >
-          Tanggal Dibuat
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("created_at")}</div>,
-  },
-  {
-    id: "actions",
+    id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const paket = row.original
+      const paket = row.original;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => handleEditPaket(paket)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit paket
-            </DropdownMenuItem>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete paket
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the paket
-                    "{paket.nama_paket}" and remove their data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDeletePaket(paket.id)}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+        <ActionDropdown
+          onEdit={() => handleEditPaket(paket)}
+          onDelete={() => handleDeletePaket(paket.id)}
+          itemName={paket.nama}
+          isSubmitting={isSubmitting}
+        />
+      );
     },
   },
-]
+];
 
 export default function ManagePaket() {
-  const pathname = '/agency/paket' // Agency page
-  const breadcrumbItems = generateBreadcrumbItems(pathname)
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [pakets, setPakets] = React.useState<Paket[]>(data)
-  const [editingPaket, setEditingPaket] = React.useState<Paket | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false)
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
-  const [newPaket, setNewPaket] = React.useState<Omit<Paket, 'id' | 'created_at' | 'updated_at'>>({
-    nama_paket: '',
-    bandwith_paket: '',
-    harga_psb: '',
-    harga_paket: '',
-    harga_pkt_ppn: '',
-    id_kategori: '',
-    id_promo: '',
-  })
-  const [pageSize, setPageSize] = React.useState<number>(10)
+  const [pakets, setPakets] = React.useState<Paket[]>([]);
+  const [editingPaket, setEditingPaket] = React.useState<Paket | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [newPaket, setNewPaket] = React.useState<
+    Omit<
+      Paket,
+      | 'id'
+      | 'created_at'
+      | 'updated_at'
+      | 'paket_categories'
+      | 'paket_promos'
+      | 'categories'
+      | 'promos'
+      | 'applied_promos'
+      | 'promo_type'
+      | 'final_price'
+    >
+  >({
+    nama: '',
+    bandwith: 0,
+    price: '',
+    price_psb: '',
+    ppn: 11,
+  });
+  const [selectedKategoris, setSelectedKategoris] = React.useState<string[]>(
+    []
+  );
+  const [selectedPromos, setSelectedPromos] = React.useState<string[]>([]);
+  const [editSelectedKategoris, setEditSelectedKategoris] = React.useState<
+    string[]
+  >([]);
+  const [editSelectedPromos, setEditSelectedPromos] = React.useState<string[]>(
+    []
+  );
+  const [pageSize, setPageSize] = React.useState<number>(10);
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [kategoris, setKategoris] = React.useState<Kategori[]>([]);
+  const [promos, setPromos] = React.useState<Promo[]>([]);
+  const [loadingKategoris, setLoadingKategoris] =
+    React.useState<boolean>(false);
+  const [loadingPromos, setLoadingPromos] = React.useState<boolean>(false);
+  const [pagination, setPagination] = React.useState<ServerPaginationState>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+
+  const fetchPakets = React.useCallback(
+    async (page?: number, limit?: number) => {
+      setLoading(true);
+      try {
+        const currentPage = page || pagination.page;
+        const currentLimit = limit || pagination.limit;
+        const res = await api.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/paket?page=${currentPage}&limit=${currentLimit}`,
+          { requireAuth: true }
+        );
+        
+        let data, paketData, paginationData;
+        
+        if (res.data.result) {
+          data = res.data.result;
+          console.log('Using res.data.result:', data); // Debug log
+        } else if (res.data.data) {
+          data = res.data;
+          console.log('Using res.data:', data); // Debug log
+        } else {
+          data = res.data;
+          console.log('Using raw res.data:', data); // Debug log
+        }
+
+        // Extract paket data
+        if (data.success && data.data) {
+          paketData = data.data;
+          paginationData = data.pagination;
+        } else if (Array.isArray(data)) {
+          paketData = data;
+          paginationData = null;
+        } else if (data.data) {
+          paketData = data.data;
+          paginationData = data.pagination;
+        } else {
+          paketData = [];
+          paginationData = null;
+        }
+        
+        setPakets(paketData || []);
+        
+        if (paginationData) {
+          setPagination({
+            page: paginationData.page || 1,
+            limit: paginationData.limit || 10,
+            total: paginationData.total || 0,
+            totalPages: paginationData.totalPages || 1,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching pakets:', error);
+        setPakets([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [] // Remove dependency to avoid infinite loop
+  );
+
+  const handlePaginationChange = (page: number, limit: number) => {
+    fetchPakets(page, limit);
+  };
+
+  const fetchKategoris = React.useCallback(async () => {
+    setLoadingKategoris(true);
+    try {
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/categori?limit=1000`, {
+        requireAuth: true,
+      });
+      setKategoris((res.data.result as any).data);
+    } catch (error) {
+      console.error('Error fetching kategoris:', error);
+    } finally {
+      setLoadingKategoris(false);
+    }
+  }, []);
+
+  const fetchPromos = React.useCallback(async () => {
+    setLoadingPromos(true);
+    try {
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/promo?limit=1000`, {
+        requireAuth: true,
+      });
+      setPromos((res.data.result as any).data);
+    } catch (error) {
+      console.error('Error fetching promos:', error);
+    } finally {
+      setLoadingPromos(false);
+    }
+  }, []);
 
   const handleEditPaket = (paket: Paket) => {
-    setEditingPaket(paket)
-    setIsEditDialogOpen(true)
-  }
+    setEditingPaket(paket);
+    setEditSelectedKategoris(paket.categories?.map((k) => k.id) || []);
+    setEditSelectedPromos(paket.applied_promos?.map((p) => p.id) || []);
+    setIsEditDialogOpen(true);
+  };
 
   const handleDeletePaket = (paketId: string) => {
-    setPakets(prev => prev.filter(paket => paket.id !== paketId))
-  }
+    setPakets((prev) => prev.filter((paket) => paket.id !== paketId));
+  };
 
-  const handleSaveEdit = () => {
+  const handleAddPaket = async () => {
+    setIsSubmitting(true);
+    try {
+      const paketData = {
+        nama: newPaket.nama,
+        bandwith: newPaket.bandwith,
+        price: parseFloat(newPaket.price.toString()),
+        price_psb: parseFloat(newPaket.price_psb.toString()),
+        ppn: newPaket.ppn,
+        category_ids: selectedKategoris,
+        promo_ids: selectedPromos,
+      };
+
+      const res = await api.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/paket`,
+        paketData,
+        { requireAuth: true }
+      );
+
+      if (res.ok) {
+        await fetchPakets();
+        toast.success('Paket berhasil ditambahkan');
+        setIsAddDialogOpen(false);
+        setNewPaket({
+          nama: '',
+          bandwith: 0,
+          price: '',
+          price_psb: '',
+          ppn: 11,
+        });
+        setSelectedKategoris([]);
+        setSelectedPromos([]);
+      } else {
+        toast.error('Gagal menambahkan paket');
+      }
+    } catch (error) {
+      console.error('Error adding paket:', error);
+      toast.error('Error saat menambahkan paket');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveEdit = async (paketId: string) => {
     if (editingPaket) {
-      setPakets(prev => prev.map(paket => 
-        paket.id === editingPaket.id ? { ...editingPaket, updated_at: new Date().toISOString().split('T')[0] } : paket
-      ))
-      setIsEditDialogOpen(false)
-      setEditingPaket(null)
-    }
-  }
+      const updatedPaket = {
+        ...editingPaket,
+        nama: editingPaket.nama,
+        bandwith: editingPaket.bandwith,
+        price: parseFloat(editingPaket.price.toString()),
+        price_psb: parseFloat(editingPaket.price_psb.toString()),
+        ppn: editingPaket.ppn,
+        final_price: parseFloat(editingPaket.final_price.toString()),
+        category_ids: editSelectedKategoris,
+        promo_ids: editSelectedPromos,
+      };
 
-  const handleAddPaket = () => {
-    const id = (Math.max(...pakets.map(p => parseInt(p.id))) + 1).toString()
-    const currentDate = new Date().toISOString().split('T')[0]
-    const paket: Paket = { 
-      ...newPaket, 
-      id, 
-      created_at: currentDate,
-      updated_at: currentDate
+      try {
+        const res = await api.put(
+          `${process.env.NEXT_PUBLIC_API_URL}/paket/${paketId}`,
+          updatedPaket
+        );
+        if (res.ok) {
+          await fetchPakets();
+          toast.success('Berhasil Memperbarui Paket');
+          setIsEditDialogOpen(false);
+          setEditingPaket(null);
+          setEditSelectedKategoris([]);
+          setEditSelectedPromos([]);
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
-    setPakets(prev => [...prev, paket])
-    setIsAddDialogOpen(false)
-    setNewPaket({
-      nama_paket: '',
-      bandwith_paket: '',
-      harga_psb: '',
-      harga_paket: '',
-      harga_pkt_ppn: '',
-      id_kategori: '',
-      id_promo: '',
-    })
-  }
+  };
 
-  const columns = React.useMemo(() => createColumns(handleEditPaket, handleDeletePaket), [])
-  
-  const table = useReactTable({
-    data: pakets,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-      pagination: {
-        pageIndex: 0,
-        pageSize: pageSize,
-      },
+  const addFormFields: FormField[] = [
+    {
+      id: 'nama_paket',
+      label: 'Nama Paket',
+      type: 'text',
+      value: newPaket.nama,
+      onChange: (value) => setNewPaket((prev) => ({ ...prev, nama: value })),
+      required: true,
     },
-    initialState: {
-      pagination: {
-        pageSize: pageSize,
-      },
+    {
+      id: 'bandwith_paket',
+      label: 'Bandwidth',
+      type: 'number',
+      value: newPaket.bandwith,
+      onChange: (value) =>
+        setNewPaket((prev) => ({ ...prev, bandwith: value })),
+      required: true,
     },
-  })
+    {
+      id: 'harga_paket',
+      label: 'Harga Paket',
+      type: 'text',
+      value: newPaket.price,
+      onChange: (value) => setNewPaket((prev) => ({ ...prev, price: value })),
+      placeholder: '500000',
+      required: true,
+    },
+    {
+      id: 'harga_psb',
+      label: 'Harga PSB',
+      type: 'text',
+      value: newPaket.price_psb,
+      onChange: (value) =>
+        setNewPaket((prev) => ({ ...prev, price_psb: value })),
+      placeholder: '200000',
+      required: true,
+    },
+    {
+      id: 'ppn',
+      label: 'PPN (%)',
+      type: 'number',
+      value: newPaket.ppn,
+      onChange: (value) => setNewPaket((prev) => ({ ...prev, ppn: value })),
+      placeholder: '11',
+      required: true,
+    },
+    {
+      id: 'kategoris',
+      label: 'Kategori',
+      type: 'custom',
+      customComponent: (
+        <div className="col-span-3">
+          <MultiSelect
+            options={kategoris.map((kategori): MultiSelectOption => ({
+              value: kategori.id,
+              label: kategori.nama,
+            }))}
+            value={selectedKategoris}
+            onChange={setSelectedKategoris}
+            placeholder="Pilih kategori..."
+            disabled={loadingKategoris}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'promos',
+      label: 'Promo',
+      type: 'custom',
+      customComponent: (
+        <div className="col-span-3">
+          <MultiSelect
+            options={promos.map((promo): MultiSelectOption => ({
+              value: promo.id,
+              label: `${promo.nama} (${promo.diskon}%)`,
+            }))}
+            value={selectedPromos}
+            onChange={setSelectedPromos}
+            placeholder="Pilih promo..."
+            disabled={loadingPromos}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  const editFormFields: FormField[] = editingPaket
+    ? [
+        {
+          id: 'edit-nama_paket',
+          label: 'Nama Paket',
+          type: 'text',
+          value: editingPaket.nama,
+          onChange: (value) =>
+            setEditingPaket((prev) => (prev ? { ...prev, nama: value } : null)),
+          required: true,
+        },
+        {
+          id: 'edit-bandwith_paket',
+          label: 'Bandwidth',
+          type: 'number',
+          value: editingPaket.bandwith,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, bandwith: value } : null
+            ),
+          required: true,
+        },
+        {
+          id: 'edit-harga_paket',
+          label: 'Harga Paket',
+          type: 'text',
+          value: editingPaket.price,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, price: value } : null
+            ),
+          placeholder: '500000',
+          required: true,
+        },
+        {
+          id: 'edit-harga_psb',
+          label: 'Harga PSB',
+          type: 'text',
+          value: editingPaket.price_psb,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, price_psb: value } : null
+            ),
+          placeholder: '200000',
+          required: true,
+        },
+        {
+          id: 'edit-ppn',
+          label: 'PPN (%)',
+          type: 'number',
+          value: editingPaket.ppn,
+          onChange: (value) =>
+            setEditingPaket((prev) => (prev ? { ...prev, ppn: value } : null)),
+          placeholder: '11',
+          required: true,
+        },
+        {
+          id: 'edit-kategoris',
+          label: 'Kategori',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <MultiSelect
+                options={kategoris.map((kategori): MultiSelectOption => ({
+                  value: kategori.id,
+                  label: kategori.nama,
+                }))}
+                value={editSelectedKategoris}
+                onChange={setEditSelectedKategoris}
+                placeholder="Pilih kategori..."
+                disabled={loadingKategoris}
+              />
+            </div>
+          ),
+        },
+        {
+          id: 'edit-promos',
+          label: 'Promo',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <MultiSelect
+                options={promos.map((promo): MultiSelectOption => ({
+                  value: promo.id,
+                  label: `${promo.nama} (${promo.diskon}%)`,
+                }))}
+                value={editSelectedPromos}
+                onChange={setEditSelectedPromos}
+                placeholder="Pilih promo..."
+                disabled={loadingPromos}
+              />
+            </div>
+          ),
+        },
+      ]
+    : [];
+
+  const columns = React.useMemo(
+    () => createColumns(handleEditPaket, handleDeletePaket, isSubmitting),
+    [isSubmitting]
+  );
 
   React.useEffect(() => {
-    table.setPageSize(pageSize)
-  }, [pageSize, table])
+    fetchPakets();
+    fetchKategoris();
+    fetchPromos();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
-      <Header fixed>
-        <div className="flex items-center justify-between w-full">
-          <PageBreadcrumb items={breadcrumbItems} />
-          <div className="ms-auto flex items-center space-x-4">
-            <ThemeSwitch />
-          </div>
-        </div>
-      </Header>
+      <PageHeader title="Kelola Paket" />
       <Main>
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">
-            Kelola Paket
-          </h1>
-          <p className="text-muted-foreground">
-            Kelola paket internet Indibiz
-          </p>
-        </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Tambah Paket
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Tambah Paket Baru</DialogTitle>
-              <DialogDescription>
-                Buat paket internet baru. Isi semua informasi yang diperlukan.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="nama_paket" className="text-right">
-                  Nama Paket
-                </Label>
-                <Input
-                  id="nama_paket"
-                  value={newPaket.nama_paket}
-                  onChange={(e) => setNewPaket(prev => ({ ...prev, nama_paket: e.target.value }))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="bandwith_paket" className="text-right">
-                  Bandwidth (Mbps)
-                </Label>
-                <Input
-                  id="bandwith_paket"
-                  type="number"
-                  value={newPaket.bandwith_paket}
-                  onChange={(e) => setNewPaket(prev => ({ ...prev, bandwith_paket: e.target.value }))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="harga_paket" className="text-right">
-                  Harga Paket
-                </Label>
-                <Input
-                  id="harga_paket"
-                  type="number"
-                  value={newPaket.harga_paket}
-                  onChange={(e) => setNewPaket(prev => ({ ...prev, harga_paket: e.target.value }))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="harga_psb" className="text-right">
-                  Harga PSB
-                </Label>
-                <Input
-                  id="harga_psb"
-                  type="number"
-                  value={newPaket.harga_psb}
-                  onChange={(e) => setNewPaket(prev => ({ ...prev, harga_psb: e.target.value }))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="harga_pkt_ppn" className="text-right">
-                  Harga + PPN
-                </Label>
-                <Input
-                  id="harga_pkt_ppn"
-                  type="number"
-                  value={newPaket.harga_pkt_ppn}
-                  onChange={(e) => setNewPaket(prev => ({ ...prev, harga_pkt_ppn: e.target.value }))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="id_kategori" className="text-right">
-                  Kategori
-                </Label>
-                <Select value={newPaket.id_kategori} onValueChange={(value) => setNewPaket(prev => ({ ...prev, id_kategori: value }))}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {kategoriPaketData.map((kategori) => (
-                      <SelectItem key={kategori.id} value={kategori.id}>
-                        {kategori.nama_kategori}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="id_promo" className="text-right">
-                  Promo
-                </Label>
-                <Select value={newPaket.id_promo || "no-promo"} onValueChange={(value) => setNewPaket(prev => ({ ...prev, id_promo: value === "no-promo" ? "" : value }))}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Pilih promo (opsional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no-promo">Tanpa Promo</SelectItem>
-                    {promoData.filter(promo => promo.status_promo === 'active').map((promo) => (
-                      <SelectItem key={promo.id} value={promo.id}>
-                        {promo.nama_promo} (-{promo.diskon}%)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleAddPaket}>Tambah Paket</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Edit Paket Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Paket</DialogTitle>
-            <DialogDescription>
-              Ubah informasi paket. Klik simpan setelah selesai.
-            </DialogDescription>
-          </DialogHeader>
-          {editingPaket && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-nama_paket" className="text-right">
-                  Nama Paket
-                </Label>
-                <Input
-                  id="edit-nama_paket"
-                  value={editingPaket.nama_paket}
-                  onChange={(e) => setEditingPaket(prev => prev ? { ...prev, nama_paket: e.target.value } : null)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-bandwith_paket" className="text-right">
-                  Bandwidth (Mbps)
-                </Label>
-                <Input
-                  id="edit-bandwith_paket"
-                  type="number"
-                  value={editingPaket.bandwith_paket}
-                  onChange={(e) => setEditingPaket(prev => prev ? { ...prev, bandwith_paket: e.target.value } : null)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-harga_paket" className="text-right">
-                  Harga Paket
-                </Label>
-                <Input
-                  id="edit-harga_paket"
-                  type="number"
-                  value={editingPaket.harga_paket}
-                  onChange={(e) => setEditingPaket(prev => prev ? { ...prev, harga_paket: e.target.value } : null)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-harga_psb" className="text-right">
-                  Harga PSB
-                </Label>
-                <Input
-                  id="edit-harga_psb"
-                  type="number"
-                  value={editingPaket.harga_psb}
-                  onChange={(e) => setEditingPaket(prev => prev ? { ...prev, harga_psb: e.target.value } : null)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-harga_pkt_ppn" className="text-right">
-                  Harga + PPN
-                </Label>
-                <Input
-                  id="edit-harga_pkt_ppn"
-                  type="number"
-                  value={editingPaket.harga_pkt_ppn}
-                  onChange={(e) => setEditingPaket(prev => prev ? { ...prev, harga_pkt_ppn: e.target.value } : null)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-id_kategori" className="text-right">
-                  Kategori
-                </Label>
-                <Select value={editingPaket.id_kategori} onValueChange={(value) => setEditingPaket(prev => prev ? { ...prev, id_kategori: value } : null)}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {kategoriPaketData.map((kategori) => (
-                      <SelectItem key={kategori.id} value={kategori.id}>
-                        {kategori.nama_kategori}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-id_promo" className="text-right">
-                  Promo
-                </Label>
-                <Select value={editingPaket.id_promo || "no-promo"} onValueChange={(value) => setEditingPaket(prev => prev ? { ...prev, id_promo: value === "no-promo" ? "" : value } : null)}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Pilih promo (opsional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no-promo">Tanpa Promo</SelectItem>
-                    {promoData.filter(promo => promo.status_promo === 'active').map((promo) => (
-                      <SelectItem key={promo.id} value={promo.id}>
-                        {promo.nama_promo} (-{promo.diskon}%)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="submit" onClick={handleSaveEdit}>Simpan Perubahan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-            <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter nama paket..."
-          value={(table.getColumn("nama_paket")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("nama_paket")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
+        <PageTitle
+          title="Kelola Paket"
+          description="Kelola paket internet Indibiz"
+          showAddButton
+          addButtonText="Tambah Paket"
+          onAddClick={() => setIsAddDialogOpen(true)}
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              View <Settings2 />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-between py-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">Show:</span>
-          <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="10" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="30">30</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm text-muted-foreground">
-            entries per page
-          </span>
-        </div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => table.previousPage()}
-                className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-            
-            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map((page) => {
-              const isCurrentPage = table.getState().pagination.pageIndex + 1 === page
-              const shouldShow = 
-                page === 1 || 
-                page === table.getPageCount() || 
-                Math.abs(page - (table.getState().pagination.pageIndex + 1)) <= 1
-              
-              if (!shouldShow && page !== 2 && page !== table.getPageCount() - 1) {
-                if (page === 3 || page === table.getPageCount() - 2) {
-                  return (
-                    <PaginationItem key={page}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )
-                }
-                return null
-              }
-              
-              return (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    onClick={() => table.setPageIndex(page - 1)}
-                    isActive={isCurrentPage}
-                    className="cursor-pointer"
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            })}
-            
-            <PaginationItem>
-              <PaginationNext 
-                onClick={() => table.nextPage()}
-                className={!table.getCanNextPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-    </div>
+
+        {/* Add Paket Dialog */}
+        <FormDialog
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          title="Tambah Paket Baru"
+          description="Buat paket internet baru. Isi semua informasi yang diperlukan."
+          fields={addFormFields}
+          onSubmit={handleAddPaket}
+          submitText="Tambah Paket"
+          isSubmitting={isSubmitting}
+        />
+
+        {/* Edit Paket Dialog */}
+        <FormDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          title="Edit Paket"
+          description="Ubah informasi paket. Klik simpan setelah selesai."
+          fields={editFormFields}
+          onSubmit={() => handleSaveEdit(editingPaket?.id || '')}
+          submitText="Simpan"
+          isSubmitting={isSubmitting}
+        />
+
+        {/* Data Table */}
+        <HybridDataTable
+          columns={columns}
+          data={pakets}
+          loading={loading}
+          searchKey="nama"
+          searchPlaceholder="Cari Nama Paket..."
+          emptyMessage="Tidak ada data paket."
+          loadingComponent={<TableSkeleton columns={paketSkeletonColumns} />}
+          pagination={pagination}
+          onPaginationChange={handlePaginationChange}
+        />
       </Main>
     </>
   );
-};
-
-const topNav = [
-  {
-    title: 'Dasbor',
-    href: '/admin/dashboard',
-    isActive: false,
-    disabled: false,
-  },
-  {
-    title: 'Agen',
-    href: '/admin/agencies',
-    isActive: false,
-    disabled: false,
-  },
-  {
-    title: 'Paket',
-    href: '/admin/paket',
-    isActive: true,
-    disabled: true,
-  },
-  {
-    title: 'Pengaturan',
-    href: '/admin/settings',
-    isActive: false,
-    disabled: false,
-  },
-]
+}

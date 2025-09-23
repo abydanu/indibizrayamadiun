@@ -195,9 +195,9 @@ function SidebarMenuCollapsedDropdown({
 
 function checkIsActive(pathname: string, item: NavItem, mainNav = false) {
   return (
-    pathname === item.url || // /endpoint?search=param
-    pathname.split('?')[0] === item.url || // endpoint
-    !!item?.items?.filter((i) => i.url === pathname).length || // if child nav is active
+    pathname === item.url || 
+    pathname.split('?')[0] === item.url || 
+    !!item?.items?.filter((i) => i.url === pathname).length || 
     (mainNav &&
       pathname.split('/')[1] !== '' &&
       pathname.split('/')[1] === item?.url?.split('/')[1])

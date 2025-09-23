@@ -8,7 +8,7 @@ type ResolvedTheme = Exclude<Theme, 'system'>
 
 const DEFAULT_THEME = 'system'
 const THEME_COOKIE_NAME = 'vite-ui-theme'
-const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
+const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -52,7 +52,7 @@ export function ThemeProvider({
           ? 'dark'
           : 'light'
       }
-      return 'light' // fallback for SSR
+      return 'light' 
     }
     return theme as ResolvedTheme
   }, [theme])
@@ -67,7 +67,6 @@ export function ThemeProvider({
       root.classList.remove('light', 'dark')
       root.classList.add(currentResolvedTheme)
       
-      // Also set data attribute for better compatibility
       root.setAttribute('data-theme', currentResolvedTheme)
     }
 

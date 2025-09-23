@@ -33,7 +33,7 @@ export function DatePicker({
 
   const handleSelect = (selectedDate: Date | undefined) => {
     onSelect?.(selectedDate)
-    setOpen(false) // Close the popover after selecting a date
+    setOpen(false)
   }
 
   return (

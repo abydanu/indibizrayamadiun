@@ -759,7 +759,7 @@ const LocationPicker = ({
                       }
                     }}
                     onKeyPress={handleKeyPress}
-                    placeholder="Cari lokasi di Indonesia atau masukkan koordinat..."
+                    placeholder="Cari lokasi di atau masukkan koordinat..."
                     className="pl-10 pr-20"
                     disabled={isSearching}
                     onFocus={() => {

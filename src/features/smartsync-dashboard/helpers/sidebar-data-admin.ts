@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   Users,
-  Settings,
+  UserStar,
   Building2,
   Layers,
   BadgePercent,
@@ -14,13 +14,13 @@ import type { SidebarData } from '../types/sidebar';
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'Admin SmartSync',
+    name: 'ADMINISTRATOR',
     email: 'admin@smartsync.com',
-    avatar: '/avatars/admin.jpg',
+    avatar: '',
   },
   teams: [
     {
-      name: 'SmartSync',
+      name: 'Indibiz Madiun Raya',
       logo: Building2,
       plan: 'Administrator',
     },
@@ -31,19 +31,15 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: 'Dasbor',
-          url: '/admin/dashboard',
+          url: '/admin/dasbor',
           icon: LayoutDashboard,
         },
         {
-          title: 'Daftar Agency',
-          url: '/admin/agencies',
+          title: 'Daftar Sales',
+          url: '/admin/sales',
           icon: Users,
         },
-        {
-          title: 'Pengaturan',
-          url: '/admin/settings',
-          icon: Settings,
-        },
+
       ],
     },
     {
@@ -74,6 +70,11 @@ export const sidebarData: SidebarData = {
           title: "Datel",
           url: "/admin/datel",
           icon: SmartphoneNfc,
+        },
+        { 
+          title: "Agency",
+          url: "/admin/agency",
+          icon: UserStar,
         },
       ],
     },

@@ -6,7 +6,7 @@ export function middleware(req: NextRequest) {
 
   if(req.nextUrl.pathname.startsWith('/login')){
     if(token) {
-      return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+      return NextResponse.redirect(new URL('/admin/dasbor', req.url));
     }
     return NextResponse.next()
   }

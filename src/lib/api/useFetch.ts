@@ -1,13 +1,14 @@
 import Cookies from 'js-cookie';
 
 const baseURL: string = process.env.NEXT_PUBLIC_API_URL || '';
-const timeout: number = 10000;
+const defaultTimeout: number = 10000;
 
 interface RequestOptions {
   requireAuth?: boolean;
   headers?: Record<string, string>;
   params?: Record<string, string | number>;
   signal?: AbortSignal;
+  timeout?: number; // ms
 }
 
 interface ApiResponse<T> {
@@ -40,7 +41,18 @@ const buildURL = (
   url: string,
   params: Record<string, string | number> | null = null
 ): string => {
-  const fullURL = url.startsWith('https') ? url : `${baseURL}${url}`;
+  // If absolute URL, use as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return params && Object.keys(params).length > 0
+      ? `${url}?${new URLSearchParams(
+          Object.entries(params).map(([key, value]) => [key, String(value)])
+        ).toString()}`
+      : url;
+  }
+
+  // Allow calling Next.js API routes directly without prefixing baseURL
+  const isLocalApiRoute = url.startsWith('/api/');
+  const fullURL = isLocalApiRoute ? url : `${baseURL}${url}`;
 
   if (params && Object.keys(params).length > 0) {
     const searchParams = new URLSearchParams(
@@ -76,11 +88,24 @@ const request = async <T>(
     };
 
     if (method !== 'GET' && data) {
-      fetchOptions.body = JSON.stringify(data);
+      // If sending FormData, let the browser set the correct Content-Type with boundary
+      if (typeof FormData !== 'undefined' && data instanceof FormData) {
+        // Remove any preset Content-Type so the browser can set it correctly
+        if ('Content-Type' in headers) {
+          delete (headers as any)['Content-Type'];
+        }
+        fetchOptions.body = data as BodyInit;
+      } else {
+        fetchOptions.body = JSON.stringify(data);
+      }
     }
 
+    // Determine timeout: allow override, and give FormData more time by default
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const effectiveTimeout = options.timeout ?? (isFormData ? 60000 : defaultTimeout);
+
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), timeout);
+      setTimeout(() => reject(new Error('Request timeout')), effectiveTimeout);
     });
 
     const response = await Promise.race([

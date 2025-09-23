@@ -24,5 +24,3 @@ export type SidebarData = {
     }>
   }>
 }
-
-export type UserRole = 'admin' | 'agency'

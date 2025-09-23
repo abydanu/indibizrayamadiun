@@ -37,7 +37,10 @@ export class AuthService {
         });
 
         toast.success('Login Berhasil!');
-        return result.data.user as User;
+        return {
+          id: "1",
+          name: "ADMINISTRATOR"
+        };
       }
 
       return null;
@@ -51,18 +54,7 @@ export class AuthService {
   static async logout(): Promise<boolean> {
     try {
       const token = Cookies.get("token")
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-        }
-      );
-
-      if (res.ok) {
+      if (token) {
         Cookies.remove("token")
         toast.success('Berhasil Logout!');
         return true;

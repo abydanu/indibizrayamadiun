@@ -32,9 +32,11 @@ const LoginCard = () => {
 
   const onSubmit = async (data: FormData) => {
     const user = await AuthService.login(data);
+    console.log(user);
+    
 
     if (user) {
-      router.push('/admin/dashboard');
+      router.push('/admin/dasbor');
     }
   };
 
@@ -44,7 +46,7 @@ const LoginCard = () => {
         <div className="text-center mb-6">
           <h2 className="text-lg font-semibold">Halaman Login Admin</h2>
           <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-            masuk menggunakan akun admin/agen anda
+            masuk menggunakan akun username dan password Administrator
           </p>
           <div className="border-t border-border mt-4"></div>
         </div>

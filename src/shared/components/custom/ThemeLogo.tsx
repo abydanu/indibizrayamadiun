@@ -24,11 +24,10 @@ export function ThemeLogo({
     setMounted(true)
   }, [])
   
-  // Prevent hydration mismatch by showing default logo until mounted
   if (!mounted) {
     return (
       <Image
-        src="./logo_indibiz.svg"
+        src="/logo_indibiz.svg"
         alt={alt}
         width={width}
         height={height}
@@ -45,7 +44,7 @@ export function ThemeLogo({
   }
   
   const isDark = resolvedTheme === 'dark'
-  const logoSrc = isDark ? './logo_indibiz_dark.svg' : './logo_indibiz.svg'
+  const logoSrc = isDark ? '/logo_indibiz_dark.svg' : '/logo_indibiz.svg'
   
   return (
     <Image
