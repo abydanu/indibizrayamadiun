@@ -70,7 +70,7 @@ export function ScrollableSelect({
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandEmpty>{emptyMessage}</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
+            <CommandGroup className="max-h-80 overflow-auto">
               {options.map((option) => (
                 <CommandItem
                   key={option.value}

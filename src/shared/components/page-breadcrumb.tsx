@@ -20,11 +20,11 @@ interface BreadcrumbItemType {
 const breadcrumbMap: Record<string, string> = {
   dashboard: 'Dasbor',
   paket: 'Paket',
-  'paket-indibiz': 'Paket Indibiz',
   'kategori-paket': 'Kategori Paket',
   promo: 'Promo',
   datel: 'Datel',
-  agen: 'Agen',
+  agency: 'Agency',
+  sales: 'Sales'
 }
 
 export function PageBreadcrumb() {
@@ -37,7 +37,7 @@ export function PageBreadcrumb() {
     items = [{ title: 'Dasbor', isActive: true }]
   } else {
     items = [
-      { title: 'Dasbor', href: '/admin/dashboard' },
+      { title: 'Dasbor', href: '/admin/dasbor' },
       ...segments.map((segment, index) => {
         const isLast = index === segments.length - 1
         return {

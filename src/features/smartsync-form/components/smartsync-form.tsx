@@ -97,7 +97,7 @@ const SmartForm = () => {
   }, [fetchDatels, fetchPakets, fetchSales]);
 
   useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
+    const subscription = form.watch((value: any, { name, type }) => {
       if (name && type === 'change') {
         updateFormField(name as keyof SmartFormData, value[name as keyof SmartFormData]);
       }

@@ -22,7 +22,6 @@ const buildHeaders = (
   requireAuth: boolean = false
 ): Record<string, string> => {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...customHeaders,
   };
 
