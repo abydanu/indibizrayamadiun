@@ -83,7 +83,10 @@ const SmartForm = () => {
 
   useEffect(() => {
     if (Object.keys(formData).length > 0) {
-      form.reset(formData);
+      form.reset({
+        ...form.getValues(),
+        ...(formData as Partial<SmartFormData>),
+      });
     }
   }, []);
 
@@ -299,6 +302,11 @@ const SmartForm = () => {
     }
   };
 
+  const mergedFormData: SmartFormData = {
+    ...form.getValues(),
+    ...(formData as Partial<SmartFormData>),
+  } as SmartFormData;
+
   return (
     <div className="container max-w-4xl mx-auto p-4 md:p-6">
       <FormStepper currentStep={currentStep} />
@@ -307,7 +315,7 @@ const SmartForm = () => {
         {currentStep === 1 && (
           <Step1InformasiUsaha
             form={form}
-            formData={formData}
+            formData={mergedFormData}
             updateFormField={updateFormField}
             datels={datels}
             loadingDatels={loadingDatels}
@@ -321,7 +329,7 @@ const SmartForm = () => {
         {currentStep === 2 && (
           <Step2DataPIC
             form={form}
-            formData={formData}
+            formData={mergedFormData}
             updateFormField={updateFormField}
           />
         )}
@@ -329,7 +337,7 @@ const SmartForm = () => {
         {currentStep === 3 && (
           <Step3PaketSales
             form={form}
-            formData={formData}
+            formData={mergedFormData}
             updateFormField={updateFormField}
             pakets={pakets}
             sales={sales}
