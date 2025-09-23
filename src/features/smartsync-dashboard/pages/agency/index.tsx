@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Main } from '@/features/smartsync-dashboard/components/main'
 import { PageHeader, PageTitle } from '@/shared/components/page-layout'
-import { DataTable, TableSkeleton, ActionDropdown } from '@/shared/components/data-table'
+import { DataTable, TableSkeleton, ActionDropdown, HybridDataTable, ServerPaginationState } from '@/shared/components/data-table'
 import { FormDialog, FormField } from '@/shared/components/forms'
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -11,6 +11,7 @@ import type { AgencyDisplay } from '../../types/agency'
 import type { ApiResult } from '../../types/api'
 import api from '@/lib/api/useFetch'
 import { toast } from 'sonner'
+import { Agency } from '../../types/sales'
 
 const agencSkeletonColumns = [
   { width: 'w-4', height: 'h-4' }, 
@@ -77,12 +78,28 @@ export default function ManageAgencyDisplay() {
   const [newAgenc, setNewAgenc] = React.useState<Omit<AgencyDisplay, 'id' | 'created_at' | 'updated_at'>>({
     nama: '',
   })
-
-  const fetchAgency = React.useCallback(async () => {
+  const [pagination, setPagination] = React.useState<ServerPaginationState>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  })
+  const fetchAgency = React.useCallback(async (page?: number, limit?: number) => {
     setLoading(true)
     try {
-      const res = await api.get<ApiResult<AgencyDisplay>>(`${process.env.NEXT_PUBLIC_API_URL}/agenc`, { requireAuth: true })
-      setKategoris(res.data.result.data)
+      const currentPage = page || pagination.page
+      const currentLimit = limit || pagination.limit
+      const res = await api.get<ApiResult<AgencyDisplay>>(`${process.env.NEXT_PUBLIC_API_URL}/agenc?page=${currentPage}&limit=${currentLimit}`, { requireAuth: true })
+
+      const data = (res.data as ApiResult<AgencyDisplay>).result
+      setKategoris(data.data)
+      setPagination({
+        page: res.data.result.pagination.page,
+        limit: res.data.result.pagination.limit,
+        total: res.data.result.pagination.total,
+        totalPages: res.data.result.pagination.totalPages,
+      })
+      
     } catch (error) {
       console.error('Error fetching Agency:', error)
       toast.error('Gagal memuat data Agency')
@@ -90,6 +107,10 @@ export default function ManageAgencyDisplay() {
       setLoading(false)
     }
   }, [])
+
+  const handlePaginationChange = (page: number, limit: number) => {
+    fetchAgency(page, limit)
+  }
 
   const handleEditAgency = (agency: AgencyDisplay) => {
     setEditingAgenc(agency)
@@ -216,7 +237,7 @@ export default function ManageAgencyDisplay() {
           isSubmitting={isSubmitting}
         />
 
-        <DataTable
+        <HybridDataTable
           columns={columns}
           data={kategoris}
           loading={loading}
@@ -224,6 +245,8 @@ export default function ManageAgencyDisplay() {
           searchPlaceholder="Cari Agency..."
           emptyMessage="Tidak ada data Agency."
           loadingComponent={<TableSkeleton columns={agencSkeletonColumns} />}
+          pagination={pagination}
+          onPaginationChange={handlePaginationChange}
         />
       </Main>
     </>
