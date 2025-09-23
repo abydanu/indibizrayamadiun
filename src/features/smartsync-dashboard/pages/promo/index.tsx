@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { DatePicker } from '@/shared/components/date-picker';
 import api from '@/lib/api/useFetch';
 import { HybridDataTable, ServerPaginationState } from '@/shared/components/data-table/hybrid-data-table';
+import { ApiResult } from '../../types/api';
 
 // Skeleton configuration untuk tabel promo
 const promoSkeletonColumns = [
@@ -207,7 +208,7 @@ export default function ManagePromo() {
             requireAuth: true,
           }
         );
-        const data = res.data.result as any;
+        const data = (res.data as ApiResult<Promo>).result;
         setPromos(data.data);
         setPagination({
           page: data.pagination.page,

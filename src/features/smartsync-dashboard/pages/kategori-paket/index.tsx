@@ -12,6 +12,7 @@ import { FormDialog, FormField } from '@/shared/components/forms';
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/shared/ui/checkbox';
 import type { KategoriPaket } from '../../types/kategori-paket';
+import type { ApiResult } from '../../types/api';
 import api from '@/lib/api/useFetch';
 import { toast } from 'sonner';
 import {
@@ -104,11 +105,11 @@ export default function ManageKategoriPaket() {
         const currentPage = page || pagination.page;
         const currentLimit = limit || pagination.limit;
 
-        const res = await api.get(
+        const res = await api.get<ApiResult<KategoriPaket>>(
           `${process.env.NEXT_PUBLIC_API_URL}/categori?page=${currentPage}&limit=${currentLimit}`,
           { requireAuth: true }
         );
-        const data = res.data.result as any;
+        const data = res.data.result;
         setKategoris(data.data);
         setPagination({
           page: data.pagination.page,

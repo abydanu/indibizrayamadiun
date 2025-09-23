@@ -15,7 +15,8 @@ import { Checkbox } from "@/shared/ui/checkbox"
 import { Badge } from "@/shared/ui/badge"
 import { toast } from 'sonner'
 import api from '@/lib/api/useFetch'
-import type { Sales, SalesApiResponse, Agency, Datel } from '../../types/sales'
+import type { Sales, Agency, Datel } from '../../types/sales'
+import { ApiResult } from '../../types/api'
 
 // Skeleton configuration untuk tabel sales
 const salesSkeletonColumns = [
@@ -170,7 +171,7 @@ export default function ManageSales() {
         { requireAuth: true }
       )
       
-      const data = res.data.result as SalesApiResponse['result']
+      const data = (res.data as ApiResult<Sales>).result
       setSales(data.data)
       setPagination({
         page: data.pagination.page,
@@ -191,7 +192,7 @@ export default function ManageSales() {
       const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/agenc?limit=1000`, {
         requireAuth: true,
       });
-      setAgencies((res.data.result as any).data || []);
+      setAgencies((res.data as ApiResult<Agency>).result.data || []);
     } catch (error) {
       console.error('Error fetching agencies:', error);
     }

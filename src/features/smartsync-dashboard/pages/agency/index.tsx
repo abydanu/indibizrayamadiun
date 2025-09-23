@@ -8,6 +8,7 @@ import { FormDialog, FormField } from '@/shared/components/forms'
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/shared/ui/checkbox"
 import type { AgencyDisplay } from '../../types/agency'
+import type { ApiResult } from '../../types/api'
 import api from '@/lib/api/useFetch'
 import { toast } from 'sonner'
 
@@ -80,8 +81,8 @@ export default function ManageAgencyDisplay() {
   const fetchAgency = React.useCallback(async () => {
     setLoading(true)
     try {
-      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/agenc`, { requireAuth: true })
-      setKategoris((res.data.result as any).data)
+      const res = await api.get<ApiResult<AgencyDisplay>>(`${process.env.NEXT_PUBLIC_API_URL}/agenc`, { requireAuth: true })
+      setKategoris(res.data.result.data)
     } catch (error) {
       console.error('Error fetching Agency:', error)
       toast.error('Gagal memuat data Agency')

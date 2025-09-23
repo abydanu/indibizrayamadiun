@@ -51,9 +51,3 @@ export interface Paket {
   applied_promos: Promo[]
   promo_type: "specific" | "global" | "none"
 }
-
-export interface PaketApiResponse {
-  success: boolean
-  message: string
-  data: Paket[]
-}

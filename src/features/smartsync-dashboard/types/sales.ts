@@ -32,17 +32,3 @@ export interface Sales {
   agency: Agency
   datel: Datel
 }
-
-export interface SalesApiResponse {
-  success: boolean
-  message: string
-  result: {
-    pagination: {
-      page: number
-      limit: number
-      total: number
-      totalPages: number
-    }
-    data: Sales[]
-  }
-}

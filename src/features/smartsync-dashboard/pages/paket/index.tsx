@@ -14,7 +14,6 @@ import { Checkbox } from '@/shared/ui/checkbox';
 import { Badge } from '@/shared/ui/badge';
 import type {
   Paket,
-  PaketApiResponse,
   Kategori,
   Promo,
 } from '../../types/paket';
@@ -24,6 +23,7 @@ import {
   HybridDataTable,
   ServerPaginationState,
 } from '@/shared/components/data-table/hybrid-data-table';
+import { ApiResult } from '../../types/api';
 
 // Skeleton configuration untuk tabel paket
 const paketSkeletonColumns = [
@@ -237,49 +237,20 @@ export default function ManagePaket() {
       try {
         const currentPage = page || pagination.page;
         const currentLimit = limit || pagination.limit;
-        const res = await api.get(
+        const res = await api.get<ApiResult<Paket>>(
           `${process.env.NEXT_PUBLIC_API_URL}/paket?page=${currentPage}&limit=${currentLimit}`,
           { requireAuth: true }
         );
-        
-        let data, paketData, paginationData;
-        
-        if (res.data.result) {
-          data = res.data.result;
-          console.log('Using res.data.result:', data); // Debug log
-        } else if (res.data.data) {
-          data = res.data;
-          console.log('Using res.data:', data); // Debug log
-        } else {
-          data = res.data;
-          console.log('Using raw res.data:', data); // Debug log
-        }
 
-        // Extract paket data
-        if (data.success && data.data) {
-          paketData = data.data;
-          paginationData = data.pagination;
-        } else if (Array.isArray(data)) {
-          paketData = data;
-          paginationData = null;
-        } else if (data.data) {
-          paketData = data.data;
-          paginationData = data.pagination;
-        } else {
-          paketData = [];
-          paginationData = null;
-        }
-        
-        setPakets(paketData || []);
-        
-        if (paginationData) {
-          setPagination({
-            page: paginationData.page || 1,
-            limit: paginationData.limit || 10,
-            total: paginationData.total || 0,
-            totalPages: paginationData.totalPages || 1,
-          });
-        }
+        const { data: paketData, pagination: paginationData } = res.data.result;
+
+        setPakets(paketData ?? []);
+        setPagination({
+          page: paginationData.page,
+          limit: paginationData.limit,
+          total: paginationData.total,
+          totalPages: paginationData.totalPages,
+        });
       } catch (error) {
         console.error('Error fetching pakets:', error);
         setPakets([]);
@@ -297,10 +268,11 @@ export default function ManagePaket() {
   const fetchKategoris = React.useCallback(async () => {
     setLoadingKategoris(true);
     try {
-      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/categori?limit=1000`, {
-        requireAuth: true,
-      });
-      setKategoris((res.data.result as any).data);
+      const res = await api.get<ApiResult<Kategori>>(
+        `${process.env.NEXT_PUBLIC_API_URL}/categori?limit=1000`,
+        { requireAuth: true }
+      );
+      setKategoris(res.data.result.data);
     } catch (error) {
       console.error('Error fetching kategoris:', error);
     } finally {
@@ -311,10 +283,11 @@ export default function ManagePaket() {
   const fetchPromos = React.useCallback(async () => {
     setLoadingPromos(true);
     try {
-      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/promo?limit=1000`, {
-        requireAuth: true,
-      });
-      setPromos((res.data.result as any).data);
+      const res = await api.get<ApiResult<Promo>>(
+        `${process.env.NEXT_PUBLIC_API_URL}/promo?limit=1000`,
+        { requireAuth: true }
+      );
+      setPromos(res.data.result.data);
     } catch (error) {
       console.error('Error fetching promos:', error);
     } finally {

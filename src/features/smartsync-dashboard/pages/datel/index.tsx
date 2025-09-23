@@ -14,6 +14,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/shared/ui/checkbox';
 import { Badge } from '@/shared/ui/badge';
 import type { Datel } from '@/features/smartsync-dashboard/types/datel';
+import type { ApiResult } from '../../types/api';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
 
@@ -155,7 +156,7 @@ export default function ManageDatel() {
       const currentLimit = limit || pagination.limit;
       
       const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/datel?page=${currentPage}&limit=${currentLimit}`);
-      const data = res.data.result;
+      const data = (res.data as ApiResult<Datel>).result;
       setDatels(data.data);
       setPagination({
         page: data.pagination.page,
@@ -225,8 +226,8 @@ export default function ManageDatel() {
     }
   };
 
-  const handleSaveEdit = async (datelId: string) => {
-    if (!editingDatel) return;
+  const handleSaveEdit = async (datelId?: string) => {
+    if (!editingDatel || !datelId) return;
 
     setIsSubmitting(true);
     const updateData = {
