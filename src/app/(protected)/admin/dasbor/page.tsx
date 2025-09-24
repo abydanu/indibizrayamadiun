@@ -1,4 +1,4 @@
-import DashboardPage from "@/features/smartsync-dashboard/pages/dashboard"
+import DashboardPage from "@/features/indibizrayamadiun-dashboard/pages/dashboard"
 
 const Dashboard = () => {
   return <DashboardPage />

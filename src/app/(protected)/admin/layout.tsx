@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar'
-import { AppSidebar } from '@/features/smartsync-dashboard/components/app-sidebar'
+import { AppSidebar } from '@/features/indibizrayamadiun-dashboard/components/app-sidebar'
 
 type AdminLayoutProps = {
   children: React.ReactNode

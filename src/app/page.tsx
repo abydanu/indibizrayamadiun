@@ -1,4 +1,4 @@
-import SmartForm from '@/features/smartsync-form/components/smartsync-form'
+import SmartForm from '@/features/indibizrayamadiun-form/components/indibizrayamadiun-form'
 import Navbar from '@/shared/components/custom/Navbar'
 import Footer from '@/shared/components/custom/Footer'
 

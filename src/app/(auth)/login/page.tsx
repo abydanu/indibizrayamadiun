@@ -1,4 +1,4 @@
-import LoginCard from '@/features/smartsync-login/components/login-card';
+import LoginCard from '@/features/indibizrayamadiun-login/components/login-card';
 import { ThemeLogo } from '@/shared/components/custom/ThemeLogo';
 
 const Login = () => {

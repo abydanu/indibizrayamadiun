@@ -35,7 +35,7 @@ export default function RootLayout({
           storageKey="smartsync-ui-theme"
         >
           {children}
-          <Toaster />
+          <Toaster richColors/>
         </ThemeProvider>
       </body>
     </html>

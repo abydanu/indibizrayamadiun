@@ -1,4 +1,4 @@
-import ManageKategoriPaket from '@/features/smartsync-dashboard/pages/kategori-paket'
+import ManageKategoriPaket from '@/features/indibizrayamadiun-dashboard/pages/kategori-paket'
 
 export default function KategoriPaketPage() {
   return <ManageKategoriPaket />

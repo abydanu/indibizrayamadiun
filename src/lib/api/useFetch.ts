@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 
 const baseURL: string = process.env.NEXT_PUBLIC_API_URL || '';
-const defaultTimeout: number = 10000;
+const defaultTimeout: number = 30000; // Increase to 30 seconds
 
 interface RequestOptions {
   requireAuth?: boolean;
@@ -95,6 +95,8 @@ const request = async <T>(
         }
         fetchOptions.body = data as BodyInit;
       } else {
+        // Set Content-Type for JSON data
+        headers['Content-Type'] = 'application/json';
         fetchOptions.body = JSON.stringify(data);
       }
     }
@@ -118,15 +120,21 @@ const request = async <T>(
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      let errorData = null;
 
       try {
-        const errorData = await response.json();
+        errorData = await response.json();
         if (errorData?.message) {
           errorMessage = errorData.message;
         }
       } catch (e) {}
 
-      throw new Error(errorMessage);
+      // Create error object with both message and full error data
+      const error = new Error(errorMessage);
+      if (errorData) {
+        (error as any).data = errorData;
+      }
+      throw error;
     }
 
     const contentType = response.headers.get('content-type');

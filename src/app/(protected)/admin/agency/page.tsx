@@ -1,4 +1,4 @@
-import ManageAgency from "@/features/smartsync-dashboard/pages/agency"
+import ManageAgency from "@/features/indibizrayamadiun-dashboard/pages/agency"
 
 const ManageAgencyPage = () => {
   return <ManageAgency />

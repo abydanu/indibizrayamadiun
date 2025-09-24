@@ -1,5 +1,3 @@
-export { DataTable } from './data-table'
-export { ServerDataTable, type ServerPaginationState } from './server-data-table'
-export { HybridDataTable } from './hybrid-data-table'
+export { DataTable, type ServerPaginationState } from './data-table'
 export { TableSkeleton } from './table-skeleton'
 export { ActionDropdown } from './action-dropdown'

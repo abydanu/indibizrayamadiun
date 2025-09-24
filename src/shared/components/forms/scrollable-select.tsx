@@ -44,8 +44,24 @@ export function ScrollableSelect({
   emptyMessage = "No options found.",
 }: ScrollableSelectProps) {
   const [open, setOpen] = React.useState(false)
+  const [searchValue, setSearchValue] = React.useState("")
 
   const selectedOption = options.find((option) => option.value === value)
+
+  // Filter options based on search value for better performance
+  const filteredOptions = React.useMemo(() => {
+    if (!searchValue) return options
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(searchValue.toLowerCase())
+    )
+  }, [options, searchValue])
+
+  // Reset search when popover closes
+  React.useEffect(() => {
+    if (!open) {
+      setSearchValue("")
+    }
+  }, [open])
 
   return (
     <div className={cn("w-full", className)}>
@@ -66,17 +82,21 @@ export function ScrollableSelect({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
-          <Command>
-            <CommandInput placeholder={searchPlaceholder} />
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder={searchPlaceholder} 
+              value={searchValue}
+              onValueChange={setSearchValue}
+            />
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup className="max-h-80 overflow-auto">
-              {options.map((option) => (
+              {filteredOptions.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue)
+                  value={option.label}
+                  onSelect={() => {
+                    onChange(option.value === value ? "" : option.value)
                     setOpen(false)
                   }}
                 >

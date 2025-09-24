@@ -1,4 +1,4 @@
-import { Header } from '@/features/smartsync-dashboard/components/header'
+import { Header } from '@/features/indibizrayamadiun-dashboard/components/header'
 import { ThemeSwitch } from '@/shared/components/theme-switch'
 import { PageBreadcrumb } from '@/shared/components/page-breadcrumb'
 import { Button } from '@/shared/ui/button'

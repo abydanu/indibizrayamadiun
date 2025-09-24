@@ -1,4 +1,4 @@
-import ManageSales from "@/features/smartsync-dashboard/pages/sales"
+import ManageSales from "@/features/indibizrayamadiun-dashboard/pages/sales"
 
 const ManageSalesPage = () => {
   return <ManageSales />

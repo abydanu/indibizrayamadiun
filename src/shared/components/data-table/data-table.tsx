@@ -7,7 +7,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -29,15 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/ui/pagination"
+import { Button } from "@/shared/ui/button"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+
+export interface ServerPaginationState {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -45,13 +44,13 @@ interface DataTableProps<TData, TValue> {
   loading?: boolean
   searchKey?: string
   searchPlaceholder?: string
-  pageSize?: number
-  onPageSizeChange?: (size: number) => void
   emptyMessage?: string
   loadingComponent?: React.ReactNode
   showPagination?: boolean
   showPageSize?: boolean
   showSearch?: boolean
+  pagination: ServerPaginationState
+  onPaginationChange: (page: number, limit: number) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -60,35 +59,27 @@ export function DataTable<TData, TValue>({
   loading = false,
   searchKey = "nama",
   searchPlaceholder = "Cari...",
-  pageSize = 10,
-  onPageSizeChange,
   emptyMessage = "Tidak ada data.",
   loadingComponent,
   showPagination = true,
   showPageSize = true,
   showSearch = true,
+  pagination,
+  onPaginationChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const [currentPageSize, setCurrentPageSize] = React.useState(pageSize)
-
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: currentPageSize,
-  })
 
   const table = useReactTable({
     data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), // Client-side filtering
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -96,21 +87,62 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination,
     },
+    manualPagination: true, // Server-side pagination
+    pageCount: pagination.totalPages,
   })
 
-  React.useEffect(() => {
-    setPagination(prev => ({
-      ...prev,
-      pageSize: currentPageSize,
-      pageIndex: 0 // Reset ke halaman pertama saat pageSize berubah
-    }))
-  }, [currentPageSize])
+  const handlePageSizeChange = (newLimit: number) => {
+    onPaginationChange(1, newLimit) // Reset ke halaman 1 saat limit berubah
+  }
 
-  const handlePageSizeChange = (size: number) => {
-    setCurrentPageSize(size)
-    onPageSizeChange?.(size)
+  const handlePageChange = (newPage: number) => {
+    onPaginationChange(newPage, pagination.limit)
+  }
+
+  const startEntry = (pagination.page - 1) * pagination.limit + 1
+  const endEntry = Math.min(pagination.page * pagination.limit, pagination.total)
+
+  // Generate page numbers untuk pagination
+  const getPageNumbers = () => {
+    const pages = []
+    const totalPages = pagination.totalPages
+    const currentPage = pagination.page
+
+    if (totalPages <= 7) {
+      // Jika total halaman <= 7, tampilkan semua
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // Jika total halaman > 7, tampilkan dengan ellipsis
+      if (currentPage <= 4) {
+        // Awal: 1 2 3 4 5 ... last
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 3) {
+        // Akhir: 1 ... last-4 last-3 last-2 last-1 last
+        pages.push(1)
+        pages.push('ellipsis')
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i)
+        }
+      } else {
+        // Tengah: 1 ... current-1 current current+1 ... last
+        pages.push(1)
+        pages.push('ellipsis')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis')
+        pages.push(totalPages)
+      }
+    }
+
+    return pages
   }
 
   return (
@@ -188,11 +220,11 @@ export function DataTable<TData, TValue>({
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-muted-foreground">Show:</span>
                 <Select 
-                  value={currentPageSize.toString()} 
+                  value={pagination.limit.toString()} 
                   onValueChange={(value) => handlePageSizeChange(Number(value))}
                 >
                   <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="10" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="10">10</SelectItem>
@@ -209,66 +241,64 @@ export function DataTable<TData, TValue>({
             )}
             
             <div className="text-sm text-muted-foreground">
-              Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-                table.getFilteredRowModel().rows.length
-              )}{" "}
-              of {table.getFilteredRowModel().rows.length} entries
+              Showing {startEntry} to {endEntry} of {pagination.total} entries
               {table.getFilteredRowModel().rows.length !== data.length && 
-                ` (filtered from ${data.length} total entries)`
+                ` (${table.getFilteredRowModel().rows.length} filtered)`
               }
             </div>
           </div>
           
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => table.previousPage()}
-                  className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
-              </PaginationItem>
-
-              {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map((page) => {
-                const isCurrentPage = table.getState().pagination.pageIndex + 1 === page
-                const shouldShow =
-                  page === 1 ||
-                  page === table.getPageCount() ||
-                  Math.abs(page - (table.getState().pagination.pageIndex + 1)) <= 1
-
-                if (!shouldShow && page !== 2 && page !== table.getPageCount() - 1) {
-                  if (page === 3 || page === table.getPageCount() - 2) {
-                    return (
-                      <PaginationItem key={page}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )
-                  }
-                  return null
-                }
-
-                return (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => table.setPageIndex(page - 1)}
-                      isActive={isCurrentPage}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              })}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => table.nextPage()}
-                  className={!table.getCanNextPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(1)}
+              disabled={pagination.page === 1}
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            {getPageNumbers().map((page, index) => (
+              <React.Fragment key={index}>
+                {page === 'ellipsis' ? (
+                  <span className="px-2 text-muted-foreground">...</span>
+                ) : (
+                  <Button
+                    variant={pagination.page === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page as number)}
+                  >
+                    {page}
+                  </Button>
+                )}
+              </React.Fragment>
+            ))}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.totalPages)}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
