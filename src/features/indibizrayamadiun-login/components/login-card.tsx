@@ -36,26 +36,26 @@ const LoginCard = () => {
     
 
     if (user) {
-      router.push('/admin/dasbor');
     }
   };
 
   return (
-    <Card className="w-full max-w-sm rounded-lg">
-      <CardHeader>
-        <div className="text-center mb-6">
+    <Card className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-lg shadow-md">
+      <CardHeader className="space-y-2 pb-4">
+        <div className="text-center">
           <h2 className="text-lg font-semibold">Halaman Login Admin</h2>
-          <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-            masuk menggunakan akun username dan password Administrator
+          <p className="text-muted-foreground text-sm max-w-xs mx-auto mt-1">
+            Masuk menggunakan akun username dan password Administrator
           </p>
-          <div className="border-t border-border mt-4"></div>
         </div>
-        <CardTitle className="font-bold text-2xl">Masuk</CardTitle>
+        <div className="border-t border-border pt-4">
+          <CardTitle className="font-bold text-2xl text-center">Masuk</CardTitle>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6 pb-6">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
+          <div className="flex flex-col gap-5">
+            <div className="grid gap-1.5">
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
@@ -64,7 +64,7 @@ const LoginCard = () => {
                 {...register('username')}
               />
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-1.5 mt-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
@@ -84,7 +84,7 @@ const LoginCard = () => {
               </div>
             </div>
           </div>
-          <CardFooter className="flex-col gap-2 mt-6">
+          <CardFooter className="flex-col gap-3 pt-4 mt-2">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Loading...' : 'Masuk'}
             </Button>

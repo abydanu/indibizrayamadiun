@@ -340,7 +340,7 @@ const SmartForm = () => {
   } as SmartFormData;
 
   return (
-    <div className="container max-w-4xl mx-auto p-4 md:p-6">
+    <div className="container max-w-4xl mx-auto p-3 sm:p-4 md:p-6">
       <FormStepper currentStep={currentStep} />
 
       <form onSubmit={form.handleSubmit(handleSubmit)}>

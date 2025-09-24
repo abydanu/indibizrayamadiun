@@ -214,16 +214,16 @@ export function DataTable<TData, TValue>({
       </div>
 
       {showPagination && (
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center space-x-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 w-full sm:w-auto">
             {showPageSize && (
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground">Show:</span>
+                <span className="text-sm text-muted-foreground hidden sm:inline">Show:</span>
                 <Select 
                   value={pagination.limit.toString()} 
                   onValueChange={(value) => handlePageSizeChange(Number(value))}
                 >
-                  <SelectTrigger className="w-[100px]">
+                  <SelectTrigger className="w-[70px] sm:w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -234,13 +234,13 @@ export function DataTable<TData, TValue>({
                     <SelectItem value="100">100</SelectItem>
                   </SelectContent>
                 </Select>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground hidden sm:inline">
                   entries per page
                 </span>
               </div>
             )}
             
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground">
               Showing {startEntry} to {endEntry} of {pagination.total} entries
               {table.getFilteredRowModel().rows.length !== data.length && 
                 ` (${table.getFilteredRowModel().rows.length} filtered)`
@@ -248,12 +248,13 @@ export function DataTable<TData, TValue>({
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 w-full sm:w-auto justify-center sm:justify-end overflow-x-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(1)}
               disabled={pagination.page === 1}
+              className="hidden sm:flex"
             >
               <ChevronsLeft className="h-4 w-4" />
             </Button>
@@ -262,31 +263,36 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page === 1}
+              className="flex-shrink-0"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             
-            {getPageNumbers().map((page, index) => (
-              <React.Fragment key={index}>
-                {page === 'ellipsis' ? (
-                  <span className="px-2 text-muted-foreground">...</span>
-                ) : (
-                  <Button
-                    variant={pagination.page === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(page as number)}
-                  >
-                    {page}
-                  </Button>
-                )}
-              </React.Fragment>
-            ))}
+            <div className="flex items-center space-x-1 min-w-0">
+              {getPageNumbers().map((page, index) => (
+                <React.Fragment key={index}>
+                  {page === 'ellipsis' ? (
+                    <span className="px-1 sm:px-2 text-muted-foreground text-sm">...</span>
+                  ) : (
+                    <Button
+                      variant={pagination.page === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(page as number)}
+                      className="min-w-[32px] h-8 px-2"
+                    >
+                      {page}
+                    </Button>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page === pagination.totalPages}
+              className="flex-shrink-0"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -295,6 +301,7 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => handlePageChange(pagination.totalPages)}
               disabled={pagination.page === pagination.totalPages}
+              className="hidden sm:flex"
             >
               <ChevronsRight className="h-4 w-4" />
             </Button>
