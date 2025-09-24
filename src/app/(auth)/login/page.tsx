@@ -1,5 +1,5 @@
 import LoginCard from '@/features/indibizrayamadiun-login/components/login-card';
-import { ThemeLogo } from '@/shared/components/custom/ThemeLogo';
+import { ThemeLogo } from '@/shared/components/custom/theme-logo';
 
 const Login = () => {
   return (

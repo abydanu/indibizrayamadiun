@@ -6,7 +6,7 @@ import { ThemeSwitch } from '@/shared/components/theme-switch'
 import { Button } from '@/shared/ui/button'
 import { Users, Package } from 'lucide-react'
 import Link from 'next/link'
-import { ThemeLogo } from '@/shared/components/custom/ThemeLogo'
+import { ThemeLogo } from '@/shared/components/custom/theme-logo'
 import { useState, useEffect } from 'react'
 
 export default function DashboardPage() {

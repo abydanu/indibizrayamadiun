@@ -3,7 +3,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Label } from '@/shared/ui/label';
 import { Input } from '@/shared/ui/input';
-import CustomFileInput from '@/shared/components/custom/CustomFileInput';
+import CustomFileInput from '@/shared/components/custom/custom-file-input';
 import { SmartFormData } from '../../hooks/use-smart-form';
 
 interface Step2DataPICProps {

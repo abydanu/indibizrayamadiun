@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeSwitch } from '@/shared/components/theme-switch';
-import { ThemeLogo } from './ThemeLogo';
+import { ThemeLogo } from './theme-logo';
 
 const Navbar = () => {
   return (

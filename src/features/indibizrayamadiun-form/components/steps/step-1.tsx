@@ -7,8 +7,8 @@ import { Textarea } from '@/shared/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Info } from 'lucide-react';
 import { ScrollableSelect, type ScrollableSelectOption } from '@/shared/components/forms/scrollable-select';
-import CustomFileInput from '@/shared/components/custom/CustomFileInput';
-import LocationPicker from '@/shared/components/custom/LocationPicker';
+import CustomFileInput from '@/shared/components/custom/custom-file-input';
+import LocationPicker from '@/shared/components/custom/location-picker';
 import { SmartFormData } from '../../hooks/use-smart-form';
 import type { Datel } from '@/features/indibizrayamadiun-dashboard/types/sales';
 

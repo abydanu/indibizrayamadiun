@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronDown, Globe, Instagram, Youtube, Facebook, Twitter } from 'lucide-react'
-import { ThemeLogo } from './ThemeLogo'
+import { ThemeLogo } from './theme-logo'
 
 const Footer = () => {
   return (
