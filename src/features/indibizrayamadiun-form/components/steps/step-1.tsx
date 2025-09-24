@@ -133,12 +133,12 @@ const Step1InformasiUsaha: React.FC<Step1InformasiUsahaProps> = ({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="hp2">
-                NO HP CP 2
+                NO HP CP 2<span className="text-red-500">*</span>
               </Label>
               <Input
                 id="hp2"
                 type="text"
-                placeholder="08xxxxxxxxxx (opsional)"
+                placeholder="08xxxxxxxxxx"
                 {...form.register('hp2', {
                   minLength: {
                     value: 10,

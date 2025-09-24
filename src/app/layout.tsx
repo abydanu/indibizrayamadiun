@@ -54,7 +54,6 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
   },
-  manifest: "/site.webmanifest",
   metadataBase: new URL("https://indibizrayamadiun.vercel.app"),
 };
 
