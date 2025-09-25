@@ -10,4 +10,6 @@ export type ApiResult<T> = {
   };
 };
 
-
+export type ApiListResult<T> = {
+  data: T[]
+}

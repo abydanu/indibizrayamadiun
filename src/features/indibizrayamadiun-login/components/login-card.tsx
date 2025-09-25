@@ -13,7 +13,7 @@ import {
 } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { AuthService } from '../services/auth-service';
 
 type FormData = {
@@ -75,6 +75,7 @@ const LoginCard = () => {
                 />
                 <button
                   type="button"
+
                   onClick={() => setShow(!show)}
                   className="absolute inset-y-0 right-3 flex items-center text-muted-foreground cursor-pointer"
                 >
@@ -87,6 +88,7 @@ const LoginCard = () => {
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Loading...' : 'Masuk'}
             </Button>
+              <a href="/" className='text-gray-600 opacity-70 text-[12px] font-semibold flex items-center gap-1'> <ArrowLeft size={10}/> Kembali</a>
           </CardFooter>
         </form>
       </CardContent>

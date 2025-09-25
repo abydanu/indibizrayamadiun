@@ -1,6 +1,6 @@
 import SmartForm from '@/features/indibizrayamadiun-form/components/indibizrayamadiun-form'
-import Footer from '@/shared/components/custom/Footer'
-import Navbar from '@/shared/components/custom/Navbar'
+import Navbar from '@/shared/components/custom/navbar'
+import Footer from '@/shared/components/custom/footer'
 
 export default function Home() {
   return (

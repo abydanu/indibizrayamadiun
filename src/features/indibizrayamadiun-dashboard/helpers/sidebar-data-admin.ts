@@ -8,6 +8,7 @@ import {
   Blocks,
   ChartBarStacked,
   SmartphoneNfc,
+  User,
 } from 'lucide-react';
 
 import type { SidebarData } from '../types/sidebar';
@@ -35,11 +36,15 @@ export const sidebarData: SidebarData = {
           icon: LayoutDashboard,
         },
         {
+          title: 'Pelanggan',
+          url: '/admin/pelanggan',
+          icon: User,
+        },
+        {
           title: 'Daftar Sales',
           url: '/admin/sales',
           icon: Users,
         },
-
       ],
     },
     {

@@ -10,8 +10,8 @@ import {
   type ServerPaginationState,
 } from '@/shared/components/data-table';
 import { FormDialog, FormField } from '@/shared/components/forms';
+import CustomFileInput from '@/shared/components/custom/custom-file-input';
 import { ColumnDef } from '@tanstack/react-table';
-import { Checkbox } from '@/shared/ui/checkbox';
 import type { AgencyDisplay } from '../../types/agency';
 import type { ApiResult } from '../../types/api';
 import api from '@/lib/api/useFetch';
@@ -31,23 +31,8 @@ export const createColumns = (
 ): ColumnDef<AgencyDisplay>[] => [
   {
     id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    header: "#",
+    cell: ({ row }) => row.index + 1,
     enableSorting: false,
     enableHiding: false,
   },
@@ -82,6 +67,7 @@ export default function ManageAgencyDisplay() {
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [newAgenc, setNewAgenc] = React.useState<
@@ -181,6 +167,36 @@ export default function ManageAgencyDisplay() {
     }
   };
 
+  const [importFile, setImportFile] = React.useState<File | null>(null);
+
+  const handleImport = async () => {
+    if (!importFile) {
+      toast.error('Pilih file terlebih dahulu');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+      const res = await api.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/agenc/import`,
+        formData,
+        { timeout: 120000 }
+      );
+      if (res.ok) {
+        toast.success('Import berhasil');
+        setIsImportDialogOpen(false);
+        setImportFile(null);
+        fetchAgency();
+      }
+    } catch (error) {
+      const errorMessage = getDisplayErrorMessage(error, 'Gagal import data');
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (!editingAgenc) return;
 
@@ -253,6 +269,9 @@ export default function ManageAgencyDisplay() {
           description="Kelola Daftar Agency Telkom Madiun Raya"
           showAddButton
           addButtonText="Tambah Data"
+          showImportButton
+          importButtonText="Import Excel"
+          onImportClick={() => setIsImportDialogOpen(true)}
           onAddClick={() => setIsAddDialogOpen(true)}
         />
 
@@ -264,6 +283,34 @@ export default function ManageAgencyDisplay() {
           fields={addFormFields}
           onSubmit={handleAddAgency}
           submitText="Tambah Agency"
+          isSubmitting={isSubmitting}
+        />
+
+        <FormDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
+          title="Import Agency dari Excel"
+          description="Upload file Excel sesuai template yang disediakan."
+          fields={[
+            {
+              id: 'file',
+              label: 'File Excel',
+              type: 'custom',
+              customComponent: (
+                <div className="col-span-3">
+                  <CustomFileInput
+                    id="agency-import"
+                    value={importFile as any}
+                    onChange={(file) => setImportFile(file)}
+                    accept=".xls,.xlsx,.csv"
+                  />
+                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                </div>
+              ),
+            } as FormField,
+          ]}
+          onSubmit={handleImport}
+          submitText="Upload"
           isSubmitting={isSubmitting}
         />
 

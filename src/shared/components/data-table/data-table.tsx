@@ -51,6 +51,7 @@ interface DataTableProps<TData, TValue> {
   showSearch?: boolean
   pagination: ServerPaginationState
   onPaginationChange: (page: number, limit: number) => void
+  bulkActions?: (selectedCount: number, selectedRows: TData[]) => React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -66,6 +67,7 @@ export function DataTable<TData, TValue>({
   showSearch = true,
   pagination,
   onPaginationChange,
+  bulkActions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -91,6 +93,9 @@ export function DataTable<TData, TValue>({
     manualPagination: true, // Server-side pagination
     pageCount: pagination.totalPages,
   })
+
+  const selectedRows = React.useMemo(() => table.getSelectedRowModel().rows.map(r => r.original as TData), [rowSelection, table])
+  const selectedCount = selectedRows.length
 
   const handlePageSizeChange = (newLimit: number) => {
     onPaginationChange(1, newLimit) // Reset ke halaman 1 saat limit berubah
@@ -148,7 +153,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full">
       {showSearch && (
-        <div className="flex items-center py-4">
+        <div className="flex items-center justify-between py-4 gap-3 flex-wrap">
           <Input
             placeholder={searchPlaceholder}
             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
@@ -157,6 +162,11 @@ export function DataTable<TData, TValue>({
             }
             className="max-w-sm"
           />
+          {bulkActions && selectedCount > 0 && (
+            <div className="flex items-center gap-2">
+              {bulkActions(selectedCount, selectedRows)}
+            </div>
+          )}
         </div>
       )}
       

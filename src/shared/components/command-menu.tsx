@@ -14,7 +14,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/shared/ui/command'
-import { useSidebarData } from '@/features/indibizrayamadiun-dashboard/hooks/useSidebarData'
+import { useSidebarData } from '@/features/indibizrayamadiun-dashboard/hooks/use-sidebar-data'
 import { ScrollArea } from '@/shared/ui/scroll-area'
 
 export function CommandMenu() {

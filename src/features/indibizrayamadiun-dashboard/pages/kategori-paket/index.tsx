@@ -11,12 +11,12 @@ import {
 } from '@/shared/components/data-table';
 import { FormDialog, FormField } from '@/shared/components/forms';
 import { ColumnDef } from '@tanstack/react-table';
-import { Checkbox } from '@/shared/ui/checkbox';
 import type { KategoriPaket } from '../../types/kategori-paket';
 import type { ApiResult } from '../../types/api';
 import api from '@/lib/api/useFetch';
 import { toast } from 'sonner';
 import { getDisplayErrorMessage } from '@/utils/api-error';
+import CustomFileInput from '@/shared/components/custom/custom-file-input';
 
 const kategoriSkeletonColumns = [
   { width: 'w-4', height: 'h-4' },
@@ -29,51 +29,36 @@ export const createColumns = (
   handleDeleteKategori: (kategoriId: string) => void,
   isSubmitting: boolean
 ): ColumnDef<KategoriPaket>[] => [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'nama',
-    header: () => <span className="font-extrabold">Nama Kategori</span>,
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue('nama')}</div>
-    ),
-  },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const kategori = row.original;
-      return (
-        <ActionDropdown
-          onEdit={() => handleEditKategori(kategori)}
-          onDelete={() => handleDeleteKategori(kategori.id)}
-          itemName={kategori.nama}
-          isSubmitting={isSubmitting}
-        />
-      );
+    {
+      id: 'select',
+      header: "#",
+      cell: ({ row }) => row.index + 1,
+      enableSorting: false,
+      enableHiding: false,
     },
-  },
-];
+    {
+      accessorKey: 'nama',
+      header: () => <span className="font-extrabold">Nama Kategori</span>,
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue('nama')}</div>
+      ),
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const kategori = row.original;
+        return (
+          <ActionDropdown
+            onEdit={() => handleEditKategori(kategori)}
+            onDelete={() => handleDeleteKategori(kategori.id)}
+            itemName={kategori.nama}
+            isSubmitting={isSubmitting}
+          />
+        );
+      },
+    },
+  ];
 
 export default function ManageKategoriPaket() {
   const [kategoris, setKategoris] = React.useState<KategoriPaket[]>([]);
@@ -82,6 +67,7 @@ export default function ManageKategoriPaket() {
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [newKategori, setNewKategori] = React.useState<
     Omit<KategoriPaket, 'id' | 'created_at' | 'updated_at'>
@@ -177,6 +163,36 @@ export default function ManageKategoriPaket() {
     }
   };
 
+  const [importFile, setImportFile] = React.useState<File | null>(null);
+
+  const handleImport = async () => {
+    if (!importFile) {
+      toast.error('Pilih file terlebih dahulu');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+      const res = await api.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/categori/import`,
+        formData,
+        { timeout: 120000 }
+      );
+      if (res.ok) {
+        toast.success('Import berhasil');
+        setIsImportDialogOpen(false);
+        setImportFile(null);
+        fetchKategoris();
+      }
+    } catch (error) {
+      const errorMessage = getDisplayErrorMessage(error, 'Gagal import data');
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handlePaginationChange = (page: number, limit: number) => {
     fetchKategoris(page, limit);
   };
@@ -222,19 +238,19 @@ export default function ManageKategoriPaket() {
 
   const editFormFields: FormField[] = editingKategori
     ? [
-        {
-          id: 'edit-nama_kategori',
-          label: 'Nama Kategori',
-          type: 'text',
-          value: editingKategori.nama,
-          onChange: (value) =>
-            setEditingKategori((prev) =>
-              prev ? { ...prev, nama: value } : null
-            ),
-          required: true,
-          placeholder: 'Masukkan nama kategori',
-        },
-      ]
+      {
+        id: 'edit-nama_kategori',
+        label: 'Nama Kategori',
+        type: 'text',
+        value: editingKategori.nama,
+        onChange: (value) =>
+          setEditingKategori((prev) =>
+            prev ? { ...prev, nama: value } : null
+          ),
+        required: true,
+        placeholder: 'Masukkan nama kategori',
+      },
+    ]
     : [];
 
   const columns = React.useMemo(
@@ -254,8 +270,39 @@ export default function ManageKategoriPaket() {
           title="Kelola Kategori Paket"
           description="Kelola kategori paket internet Indibiz"
           showAddButton
-          addButtonText="Tambah Kategori"
+          addButtonText="Tambah Data"
+          showImportButton
+          importButtonText="Import Excel"
+          onImportClick={() => setIsImportDialogOpen(true)}
           onAddClick={() => setIsAddDialogOpen(true)}
+        />
+
+        <FormDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
+          title="Import Agency dari Excel"
+          description="Upload file Excel sesuai template yang disediakan."
+          fields={[
+            {
+              id: 'file',
+              label: 'File Excel',
+              type: 'custom',
+              customComponent: (
+                <div className="col-span-3">
+                  <CustomFileInput
+                    id="agency-import"
+                    value={importFile as any}
+                    onChange={(file) => setImportFile(file)}
+                    accept=".xls,.xlsx,.csv"
+                  />
+                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                </div>
+              ),
+            } as FormField,
+          ]}
+          onSubmit={handleImport}
+          submitText="Upload"
+          isSubmitting={isSubmitting}
         />
 
         <FormDialog

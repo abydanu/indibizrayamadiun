@@ -15,27 +15,36 @@ function truncateFileName(name: string, maxLength = 30) {
 interface CustomFileInputProps {
   id: string;
   onChange: (file: File | null) => void;
-  value?: File | null;
+  value?: File | string | null;
+  accept?: string;
 }
 
 export default function CustomFileInput({
   id,
   onChange,
   value,
+  accept = '*/*',
 }: CustomFileInputProps) {
   const [fileName, setFileName] = useState<string | null>(
-    value ? value.name : null
+    typeof value === 'object' && value ? value.name : typeof value === 'string' ? value.split('/').pop() || value : null
   );
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
-    setFileName(value ? value.name : null);
-    if (value && value.type.startsWith('image/')) {
-      const url = URL.createObjectURL(value);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
+    if (value instanceof File) {
+      setFileName(value.name);
+      if (value.type && value.type.startsWith('image/')) {
+        const url = URL.createObjectURL(value);
+        setPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+      }
+      setPreviewUrl(null);
+    } else if (typeof value === 'string' && value) {
+      setFileName(value.split('/').pop() || value);
+      setPreviewUrl(null);
     } else {
+      setFileName(null);
       setPreviewUrl(null);
     }
   }, [value]);
@@ -45,7 +54,7 @@ export default function CustomFileInput({
       <Input
         id={id}
         type="file"
-        accept="image/*"
+        accept={accept}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0] || null;

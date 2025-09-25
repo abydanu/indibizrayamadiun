@@ -133,7 +133,7 @@ const Step1InformasiUsaha: React.FC<Step1InformasiUsahaProps> = ({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="hp2">
-                NO HP CP 2<span className="text-red-500">*</span>
+                NO HP CP 2
               </Label>
               <Input
                 id="hp2"
@@ -186,12 +186,11 @@ const Step1InformasiUsaha: React.FC<Step1InformasiUsahaProps> = ({
 
           <div className="grid gap-2">
             <Label htmlFor="koordinat_alamat">
-              KOORDINAT ALAMAT<span className="text-red-500">*</span>
+              KOORDINAT ALAMAT
             </Label>
             <input
               type="hidden"
               {...form.register('koordinat_alamat', {
-                required: 'Koordinat alamat wajib diisi',
                 pattern: {
                   value: /^-?\d+\.?\d*,\s*-?\d+\.?\d*$/,
                   message: 'Format koordinat tidak valid (contoh: -7.2575, 112.7521)'

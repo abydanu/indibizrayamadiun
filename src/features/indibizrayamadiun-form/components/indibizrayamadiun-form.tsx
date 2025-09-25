@@ -30,7 +30,6 @@ const SmartForm = () => {
   const [hasKodeSales, setHasKodeSales] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useSmartForm();
-  const skipFilesGlobal = process.env.NEXT_PUBLIC_SKIP_FILES === 'fasle';
   const {
     formData,
     currentStep,
@@ -63,12 +62,19 @@ const SmartForm = () => {
     setLoadingPakets(true);
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/paket?limit=1000`
+        `${process.env.NEXT_PUBLIC_API_URL}/paket/list`
       );
-
-      const paketData = (res.data as any).result?.data || [];
-
-      setPakets(paketData || []);
+      const list = (res.data as any).data || [];
+      const mapped = list.map((p: any) => ({
+        id: p.id,
+        nama: p.nama,
+        bandwith: p.bandwith,
+        final_price: p.final_price,
+        applied_promos: Array.isArray(p.paket_promos)
+          ? p.paket_promos.map((pp: any) => ({ nama: pp?.promo?.nama }))
+          : [],
+      }));
+      setPakets(mapped || []);
     } catch (error) {
       console.error('Error fetching pakets:', error);
       toast.error('Gagal memuat data paket');
@@ -81,11 +87,10 @@ const SmartForm = () => {
     setLoadingSales(true);
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/sales?limit=1000` 
+        `${process.env.NEXT_PUBLIC_API_URL}/sales/list`
       );
-      const salesData = (res.data as any).result?.data || [];
-      const activeSales = salesData.filter((sales: any) => sales.status === 'ACTIVE');
-      setSales(activeSales);
+      const salesData = (res.data as any).data || [];
+      setSales(salesData);
     } catch (error) {
       console.error('Error fetching sales:', error);
       toast.error('Gagal memuat data sales');
@@ -157,9 +162,10 @@ const SmartForm = () => {
         'hp2',
         'alamat_pemasangan',
         'koordinat_alamat',
-        ...(skipFilesGlobal
-          ? []
-          : ['foto_lokasi', 'bukti_usaha', 'bukti_nib_npwp']),
+        'foto_lokasi',
+        'bukti_usaha',
+        'foto_lokasi',
+        'bukti_nib_npwp',
       ];
       isValid = await validateStepFields(step1Fields);
     } else if (currentStep === 2) {
@@ -168,7 +174,8 @@ const SmartForm = () => {
         'ttl_pic',
         'nomor_ktp',
         'email',
-        ...(skipFilesGlobal ? [] : ['foto_ktp', 'foto_ktp_selfie']),
+        'foto_ktp',
+        'foto_ktp_selfie'
       ];
       isValid = await validateStepFields(step2Fields);
     } else if (currentStep === 3) {
@@ -202,7 +209,6 @@ const SmartForm = () => {
     setIsSubmitting(true);
     try {
       const finalData = { ...formData, ...data };
-      const skipFiles = process.env.NEXT_PUBLIC_SKIP_FILES === 'false';
 
       const selectedSalesData = sales.find((s) => s.nama === selectedSales);
       if (!selectedSalesData) {
@@ -216,8 +222,8 @@ const SmartForm = () => {
         paket_id: finalData.paket_indibiz,
         sales_id: selectedSalesData.id,
         no_hp_1: finalData.hp1,
-        no_hp_2: finalData.hp2 || '',
-        kordinat: finalData.koordinat_alamat || '',
+        no_hp_2: finalData.hp2 || '-',
+        kordinat: finalData.koordinat_alamat || '-',
         alamat: finalData.alamat_pemasangan,
         nama_pic: finalData.nama_pic,
         ttl_pic: finalData.ttl_pic,
@@ -225,68 +231,31 @@ const SmartForm = () => {
         email: finalData.email || '',
         foto_ktp: finalData.foto_ktp || null,
         foto_selfie: finalData.foto_ktp_selfie || null,
+        foto_lokasi: finalData.foto_lokasi || null,
         bukti_usaha: finalData.bukti_usaha || null,
         bukti_niwp: finalData.bukti_nib_npwp || null,
       };
 
-      // const compressImageFile = async (
-      //   file: File,
-      //   maxWidth = 1280,
-      //   maxHeight = 1280,
-      //   quality = 0.8
-      // ): Promise<File> => {
-      //   if (!file.type.startsWith('image/')) return file;
-      //   const originalMime = file.type === 'image/png' || file.type === 'image/jpeg' ? file.type : 'image/jpeg';
-
-      //   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      //     const image = new Image();
-      //     const url = URL.createObjectURL(file);
-      //     image.onload = () => resolve(image);
-      //     image.onerror = reject;
-      //     image.src = url;
-      //   }).catch(() => null as unknown as HTMLImageElement);
-      //   if (!img) return file;
-
-      //   const { width, height } = img;
-      //   const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-      //   if (ratio >= 1) return file;
-
-      //   const targetWidth = Math.round(width * ratio);
-      //   const targetHeight = Math.round(height * ratio);
-      //   const canvas = document.createElement('canvas');
-      //   canvas.width = targetWidth;
-      //   canvas.height = targetHeight;
-      //   const ctx = canvas.getContext('2d');
-      //   if (!ctx) return file;
-      //   ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-      //   const blob: Blob | null = await new Promise((resolve) =>
-      //     canvas.toBlob(
-      //       b => resolve(b),
-      //       originalMime,
-      //       originalMime === 'image/jpeg' ? quality : undefined
-      //     )
-      //   );
-      //   if (!blob) return file;
-      //   return new File([blob], file.name, { type: originalMime });
-      // };
-
-      const fileKeys = ['foto_ktp', 'foto_selfie', 'bukti_usaha', 'bukti_niwp'];
-      if (skipFiles) {
-        for (const key of fileKeys) {
-          if (key in submitData) delete submitData[key];
-        }
-      } else {
-      }
-
       const apiFormData = new FormData();
+
+      const fileKeys = new Set([
+        'foto_ktp',
+        'foto_selfie',
+        'foto_lokasi',
+        'bukti_usaha',
+        'bukti_niwp',
+      ]);
 
       Object.keys(submitData).forEach((key) => {
         const value = submitData[key];
 
         if (value instanceof File) {
           apiFormData.append(key, value);
-        } else if (value !== null && value !== undefined && value !== '') {
+          return;
+        }
+
+        // For non-file fields, only append when value is non-empty
+        if (value !== null && value !== undefined && String(value) !== '') {
           apiFormData.append(key, String(value));
         }
       });

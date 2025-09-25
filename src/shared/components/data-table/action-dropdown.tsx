@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, CheckCircle } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import {
   DropdownMenu,
@@ -25,6 +25,8 @@ interface ActionDropdownProps {
   itemName: string
   isSubmitting?: boolean
   editLabel?: string
+  onSecondary?: () => void
+  secondaryLabel?: string
   deleteLabel?: string
   deleteTitle?: string
   deleteDescription?: string
@@ -36,6 +38,8 @@ export function ActionDropdown({
   itemName,
   isSubmitting = false,
   editLabel = "Edit",
+  onSecondary,
+  secondaryLabel = "Secondary",
   deleteLabel = "Hapus Data",
   deleteTitle = "Apakah Anda Yakin?",
   deleteDescription = "Tindakan ini tidak dapat dibatalkan. Ini akan menghapus data secara permanen."
@@ -54,6 +58,12 @@ export function ActionDropdown({
           <Pencil className="mr-2 h-4 w-4" />
           {editLabel}
         </DropdownMenuItem>
+        {onSecondary && (
+          <DropdownMenuItem onClick={onSecondary}>
+            <CheckCircle className="mr-2 h-4 w-4" />
+            {secondaryLabel}
+          </DropdownMenuItem>
+        )}
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>

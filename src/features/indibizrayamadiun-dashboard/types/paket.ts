@@ -1,8 +1,6 @@
 export interface Kategori {
   id: string
   nama: string
-  created_at: string
-  updated_at: string
 }
 
 export interface Promo {
@@ -44,6 +42,7 @@ export interface Paket {
   final_price: string
   created_at: string
   updated_at: string
+  is_show: boolean
   paket_categories: PaketCategory[]
   paket_promos: PaketPromo[]
   categories: Kategori[]

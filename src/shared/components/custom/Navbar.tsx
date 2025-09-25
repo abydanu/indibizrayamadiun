@@ -1,6 +1,7 @@
 import React from 'react';
 import { ThemeSwitch } from '@/shared/components/theme-switch';
 import { ThemeLogo } from './theme-logo';
+import { Button } from '@/shared/ui/button';
 
 const Navbar = () => {
   return (
@@ -14,7 +15,16 @@ const Navbar = () => {
               alt="indibiz"
             />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full">
+            <Button
+              asChild
+              size={'lg'}
+              className="ml-auto hover:bg-red-700 duration-300 transition-all"
+            >
+              <a href="/login">
+                Login
+              </a>
+            </Button>
             <ThemeSwitch />
           </div>
         </div>
