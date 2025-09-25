@@ -32,10 +32,9 @@ const LoginCard = () => {
 
   const onSubmit = async (data: FormData) => {
     const user = await AuthService.login(data);
-    console.log(user);
-    
 
     if (user) {
+      router.push('/admin/dasbor')
     }
   };
 
