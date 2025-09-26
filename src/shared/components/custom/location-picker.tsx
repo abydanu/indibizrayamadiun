@@ -147,6 +147,36 @@ const LocationPicker = ({
     });
   }, []);
 
+  // Function to update map and marker with coordinates
+  const updateMapWithCoordinates = useCallback(async (lat: number, lng: number, popupText: string) => {
+    if (!map) return;
+
+    const newCoords = {
+      lat: Number.parseFloat(lat.toFixed(6)),
+      lng: Number.parseFloat(lng.toFixed(6)),
+    };
+
+    setTempCoordinates(newCoords);
+    map.setView([lat, lng], 16);
+
+    if (marker) {
+      map.removeLayer(marker);
+    }
+
+    const L = window.L;
+    if (L) {
+      const newMarker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(popupText)
+        .openPopup();
+
+      setMarker(newMarker);
+    }
+
+    // Always try to get address for coordinates
+    await reverseGeocode(lat, lng);
+  }, [map, marker, reverseGeocode]);
+
   const searchLocation = useCallback(
     async (query: string, saveToRecent = true) => {
       if (!query.trim()) {
@@ -165,6 +195,7 @@ const LocationPicker = ({
 
       setIsSearching(true);
       try {
+        // Check if input is coordinates (lat, lng format)
         const coordMatch = query.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
 
         if (coordMatch) {
@@ -172,36 +203,24 @@ const LocationPicker = ({
           const lng = Number.parseFloat(coordMatch[2]);
 
           if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-            const newCoords = { lat, lng };
-            setTempCoordinates(newCoords);
-
+            // Update map immediately with coordinates
             if (map) {
-              map.setView([lat, lng], 16);
-
-              if (marker) {
-                map.removeLayer(marker);
-              }
-
-              const L = window.L;
-              if (L) {
-                const newMarker = L.marker([lat, lng])
-                  .addTo(map)
-                  .bindPopup(`Koordinat: ${lat}, ${lng}`)
-                  .openPopup();
-
-                setMarker(newMarker);
-              }
-
-              await reverseGeocode(lat, lng);
+              const popupText = `Koordinat: ${lat}, ${lng}`;
+              await updateMapWithCoordinates(lat, lng, popupText);
             }
 
             setSearchResults([]);
             setShowSearchResults(false);
-            toast.success('Koordinat berhasil ditemukan!');
+            toast.success('Koordinat berhasil ditemukan dan dipetakan!');
+            
+            if (saveToRecent) {
+              saveToRecentSearches(query);
+            }
           } else {
             toast.error('Koordinat tidak valid. Pastikan format: lat, lng');
           }
         } else {
+          // Regular location search
           const jatimLat = -7.5360639;
           const jatimLng = 112.2384017;
 
@@ -262,7 +281,7 @@ const LocationPicker = ({
         setIsSearching(false);
       }
     },
-    [searchCache, saveToRecentSearches]
+    [searchCache, saveToRecentSearches, map, updateMapWithCoordinates]
   );
 
   const formatPhotonAddress = (properties: any) => {
@@ -288,29 +307,14 @@ const LocationPicker = ({
   const selectSearchResult = async (result: any) => {
     const lat = Number.parseFloat(result.lat);
     const lng = Number.parseFloat(result.lon);
-    const newCoords = { lat, lng };
 
-    setTempCoordinates(newCoords);
     setSearchQuery(result.display_name);
     setSearchResults([]);
     setShowSearchResults(false);
 
     if (map) {
-      map.setView([lat, lng], 16);
-
-      if (marker) {
-        map.removeLayer(marker);
-      }
-
-      const L = window.L;
-      if (L) {
-        const newMarker = L.marker([lat, lng])
-          .addTo(map)
-          .bindPopup(`${result.display_name}<br>Koordinat: ${lat}, ${lng}`)
-          .openPopup();
-
-        setMarker(newMarker);
-      }
+      const popupText = `${result.display_name}<br>Koordinat: ${lat}, ${lng}`;
+      await updateMapWithCoordinates(lat, lng, popupText);
 
       if (onAddressChange) {
         onAddressChange(result.display_name);
@@ -322,6 +326,10 @@ const LocationPicker = ({
 
   const selectRecentSearch = (query: string) => {
     setSearchQuery(query);
+    // Auto-search when selecting recent search
+    setTimeout(() => {
+      searchLocation(query, false);
+    }, 100);
   };
 
   const clearRecentSearches = () => {
@@ -441,27 +449,10 @@ const LocationPicker = ({
         setMarker(newMarker);
       }
 
-      newMap.on('click', (e: any) => {
+      newMap.on('click', async (e: any) => {
         const { lat, lng } = e.latlng;
-        const newCoords = {
-          lat: Number.parseFloat(lat.toFixed(6)),
-          lng: Number.parseFloat(lng.toFixed(6)),
-        };
-
-        setTempCoordinates(newCoords);
-
-        if (marker) {
-          newMap.removeLayer(marker);
-        }
-
-        const newMarker = L.marker([lat, lng])
-          .addTo(newMap)
-          .bindPopup(`Koordinat: ${newCoords.lat}, ${newCoords.lng}`)
-          .openPopup();
-
-        setMarker(newMarker);
-
-        reverseGeocode(newCoords.lat, newCoords.lng);
+        const popupText = `Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        await updateMapWithCoordinates(lat, lng, popupText);
       });
 
       setMap(newMap);
@@ -492,7 +483,7 @@ const LocationPicker = ({
         clearTimeout(searchTimeout);
       }
     };
-  }, [isMapOpen, coordinates, map, marker, leafletLoaded]);
+  }, [isMapOpen, coordinates, map, marker, leafletLoaded, updateMapWithCoordinates]);
 
   const getCurrentLocation = async () => {
     setIsLoading(true);
@@ -529,37 +520,20 @@ const LocationPicker = ({
       }
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude, accuracy } = position.coords;
-          const newCoords = {
-            lat: Number.parseFloat(latitude.toFixed(6)),
-            lng: Number.parseFloat(longitude.toFixed(6)),
-          };
-
-          setTempCoordinates(newCoords);
 
           if (map) {
-            map.setView([latitude, longitude], 18);
+            const accuracyText = accuracy
+              ? ` (Akurasi: ±${Math.round(accuracy)}m)`
+              : '';
+            const popupText = `Lokasi Saat Ini: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}${accuracyText}`;
+            
+            await updateMapWithCoordinates(latitude, longitude, popupText);
 
-            if (marker) {
-              map.removeLayer(marker);
-            }
-
-            const L = window.L;
-            if (L) {
-              const accuracyText = accuracy
-                ? ` (Akurasi: ±${Math.round(accuracy)}m)`
-                : '';
-              const newMarker = L.marker([latitude, longitude])
-                .addTo(map)
-                .bindPopup(
-                  `Lokasi Saat Ini: ${newCoords.lat}, ${newCoords.lng}${accuracyText}`
-                )
-                .openPopup();
-
-              setMarker(newMarker);
-
-              if (isMobile && accuracy && accuracy < 100) {
+            if (isMobile && accuracy && accuracy < 100) {
+              const L = window.L;
+              if (L) {
                 L.circle([latitude, longitude], {
                   radius: accuracy,
                   color: '#3388ff',
@@ -569,8 +543,6 @@ const LocationPicker = ({
                 }).addTo(map);
               }
             }
-
-            reverseGeocode(newCoords.lat, newCoords.lng);
           }
 
           setIsLoading(false);
@@ -759,7 +731,7 @@ const LocationPicker = ({
                       }
                     }}
                     onKeyPress={handleKeyPress}
-                    placeholder="Cari lokasi di atau masukkan koordinat..."
+                    placeholder="Cari lokasi atau masukkan koordinat (lat, lng)..."
                     className="pl-10 pr-20"
                     disabled={isSearching}
                     onFocus={() => {
@@ -945,8 +917,8 @@ const LocationPicker = ({
                 style={{ minHeight: '300px' }}
               />
 
-              {/* Search Guide - Only show when map is loaded */}
-              {/* {leafletLoaded && !isMapLoading && (
+              {/* Search Guide */}
+              {leafletLoaded && !isMapLoading && (
                 <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border p-3 rounded-lg shadow-lg max-w-xs">
                   <p className="text-sm text-foreground">
                     <strong>🗺️ Panduan Pencarian:</strong><br />
@@ -958,7 +930,7 @@ const LocationPicker = ({
                     • 🚀 <strong>Tips:</strong> Hasil di-cache & riwayat tersimpan untuk kecepatan
                   </p>
                 </div>
-              )} */}
+              )}
             </div>
 
             <div className="p-4 border-t flex justify-between flex-shrink-0">
