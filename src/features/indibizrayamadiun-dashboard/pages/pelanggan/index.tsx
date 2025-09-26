@@ -900,17 +900,12 @@ export default function ManageRegistrasi() {
           title="Pelanggan"
           description="Daftar pelanggan. Validasi status atau hapus data."
           showImportButton
-          importButtonText="Import Data Pelanggan"
+          showExportButton
+          importButtonText="Import Data"
+          exportButtonText='Export Data'
           onImportClick={() => setIsImportDialogOpen(true)}
+          onExportClick={exportToExcel}
         >
-          <div className="flex gap-2 self-end">
-            <Button
-              onClick={exportToExcel}
-              className="px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm w-auto"
-            >
-              Export Data
-            </Button>
-          </div>
         </PageTitle>
 
         <FormDialog

@@ -2,7 +2,7 @@ import { Header } from '@/features/indibizrayamadiun-dashboard/components/header
 import { ThemeSwitch } from '@/shared/components/theme-switch'
 import { PageBreadcrumb } from '@/shared/components/page-breadcrumb'
 import { Button } from '@/shared/ui/button'
-import { Import, Plus } from 'lucide-react'
+import { Import, Plus, ArrowRightFromLine } from 'lucide-react'
 
 interface PageHeaderProps {
   title: string
@@ -38,9 +38,12 @@ interface PageTitleProps {
   description?: string
   showAddButton?: boolean
   showImportButton?: boolean
+  showExportButton?: boolean
   importButtonText?: string
+  exportButtonText?: string
   addButtonText?: string
   onImportClick?: () => void
+  onExportClick?: () => void
   onAddClick?: () => void
   children?: React.ReactNode
 }
@@ -50,9 +53,12 @@ export function PageTitle({
   description,
   showAddButton = false,
   showImportButton = false,
+  showExportButton = false,
   importButtonText = "Import Data",
+  exportButtonText = "Export Data",
   addButtonText = "Tambah",
   onImportClick,
+  onExportClick,
   onAddClick,
   children
 }: PageTitleProps) {
@@ -88,6 +94,15 @@ export function PageTitle({
           >
             <Import className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
             {importButtonText}
+          </Button>
+        )}
+        {showExportButton && onExportClick && (
+          <Button
+            onClick={onExportClick}
+            className="px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm w-auto"
+          >
+            <ArrowRightFromLine className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            {exportButtonText}
           </Button>
         )}
       </div>

@@ -254,7 +254,6 @@ const SmartForm = () => {
           return;
         }
 
-        // For non-file fields, only append when value is non-empty
         if (value !== null && value !== undefined && String(value) !== '') {
           apiFormData.append(key, String(value));
         }
