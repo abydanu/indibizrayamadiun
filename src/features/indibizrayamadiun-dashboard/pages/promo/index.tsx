@@ -571,7 +571,7 @@ export default function ManagePromo() {
           showAddButton
           addButtonText="Tambah Data"
           showImportButton
-          importButtonText="Import Excel"
+          importButtonText="Import Data"
           onImportClick={() => setIsImportDialogOpen(true)}
           onAddClick={() => setIsAddDialogOpen(true)}
         />
@@ -579,7 +579,7 @@ export default function ManagePromo() {
         <FormDialog
           open={isImportDialogOpen}
           onOpenChange={setIsImportDialogOpen}
-          title="Import Agency dari Excel"
+          title="Import Promo dari Excel"
           description="Upload file Excel sesuai template yang disediakan."
           fields={[
             {

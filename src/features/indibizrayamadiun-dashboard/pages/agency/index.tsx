@@ -270,7 +270,7 @@ export default function ManageAgencyDisplay() {
           showAddButton
           addButtonText="Tambah Data"
           showImportButton
-          importButtonText="Import Excel"
+          importButtonText="Import Data"
           onImportClick={() => setIsImportDialogOpen(true)}
           onAddClick={() => setIsAddDialogOpen(true)}
         />

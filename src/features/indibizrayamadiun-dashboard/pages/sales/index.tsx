@@ -549,7 +549,7 @@ export default function ManageSales() {
           showAddButton
           addButtonText="Tambah Data"
           showImportButton
-          importButtonText="Import Excel"
+          importButtonText="Import Data"
           onImportClick={() => setIsImportDialogOpen(true)}
           onAddClick={() => setIsAddDialogOpen(true)}
         />
@@ -557,7 +557,7 @@ export default function ManageSales() {
         <FormDialog
           open={isImportDialogOpen}
           onOpenChange={setIsImportDialogOpen}
-          title="Import Agency dari Excel"
+          title="Import Sales dari Excel"
           description="Upload file Excel sesuai template yang disediakan."
           fields={[
             {

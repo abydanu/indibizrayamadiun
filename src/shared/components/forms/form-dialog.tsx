@@ -81,7 +81,7 @@ export function FormDialog({
             onChange={(e) => field.onChange?.(e.target.value)}
             placeholder={field.placeholder}
             disabled={field.disabled}
-            className={field.className || 'w-full'}
+            className={field.className || 'w-full truncate'}
           />
         );
 
@@ -115,7 +115,7 @@ export function FormDialog({
             onChange={(e) => field.onChange?.(e.target.value)}
             placeholder={field.placeholder}
             disabled={field.disabled}
-            className={field.className || 'w-full'}
+            className={field.className || 'w-full resize-none'}
           />
         );
 
@@ -126,12 +126,12 @@ export function FormDialog({
             field.onChange?.(parsed);
           }}>
             <SelectTrigger className={field.className || 'w-full'}>
-              <SelectValue placeholder={field.placeholder} />
+              <SelectValue placeholder={field.placeholder} className="truncate" />
             </SelectTrigger>
             <SelectContent>
               {field.options?.map((option) => (
-                <SelectItem key={String(option.value)} value={String(option.value)}>
-                  {option.label}
+                <SelectItem key={String(option.value)} value={String(option.value)} className="truncate">
+                  <span className="truncate">{option.label}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -182,7 +182,7 @@ export function FormDialog({
         </DialogHeader>
 
         {/* Form Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-0 py-2 sm:py-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-0 py-2 sm:py-0">
           <div className="grid gap-4 sm:gap-6">
             {fields.map((field) => (
               <div
@@ -196,7 +196,7 @@ export function FormDialog({
                   {field.label}
                   {field.required && <span className="text-red-500 ml-1">*</span>}
                 </Label>
-                <div className="flex-1 min-w-0">{renderField(field)}</div>
+                <div className="flex-1 min-w-0 overflow-hidden w-full">{renderField(field)}</div>
               </div>
             ))}
           </div>

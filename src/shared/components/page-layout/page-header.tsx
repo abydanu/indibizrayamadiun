@@ -50,7 +50,7 @@ export function PageTitle({
   description,
   showAddButton = false,
   showImportButton = false,
-  importButtonText = "Import Excel",
+  importButtonText = "Import Data",
   addButtonText = "Tambah",
   onImportClick,
   onAddClick,

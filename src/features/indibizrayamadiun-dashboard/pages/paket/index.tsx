@@ -692,7 +692,7 @@ export default function ManagePaket() {
           showAddButton
           addButtonText="Tambah Data"
           showImportButton
-          importButtonText="Import Excel"
+          importButtonText="Import Data"
           onImportClick={() => setIsImportDialogOpen(true)}
           onAddClick={() => setIsAddDialogOpen(true)}
         />
@@ -700,7 +700,7 @@ export default function ManagePaket() {
         <FormDialog
           open={isImportDialogOpen}
           onOpenChange={setIsImportDialogOpen}
-          title="Import Agency dari Excel"
+          title="Import Paket dari Excel"
           description="Upload file Excel sesuai template yang disediakan."
           fields={[
             {
