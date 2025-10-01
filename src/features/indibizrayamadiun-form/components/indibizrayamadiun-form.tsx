@@ -45,11 +45,15 @@ const SmartForm = () => {
     setLoadingDatels(true);
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/list`
+        `${process.env.NEXT_PUBLIC_API_URL}/datel?limit=1000`
       );
       const datelData = (res.data as any).data || [];
 
-      setDatels(datelData);
+      const wilayah: any = Array.from(
+        new Set(datelData.map((item: any) => item.wilayah))
+      )
+
+      setDatels(wilayah);
     } catch (error) {
       console.error('Error fetching datels:', error);
       toast.error('Gagal memuat data datel');
