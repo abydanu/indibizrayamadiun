@@ -18,8 +18,8 @@ import {
 } from "@/shared/ui/popover"
 
 export interface ScrollableSelectOption {
-  value: string
-  label: string
+  value: any
+  label: any
 }
 
 interface ScrollableSelectProps {

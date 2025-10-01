@@ -498,9 +498,9 @@ export default function ManageSales() {
             <div className="col-span-3">
               <ScrollableSelect
                 options={datels.map(
-                  (datel): ScrollableSelectOption => ({
-                    value: datel.id,
-                    label: datel.nama,
+                  (wilayah): ScrollableSelectOption => ({
+                    value: wilayah,
+                    label: wilayah,
                   })
                 )}
                 value={editingSales.datel_id}

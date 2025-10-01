@@ -79,9 +79,9 @@ const Step1InformasiUsaha: React.FC<Step1InformasiUsahaProps> = ({
               })}
             />
             <ScrollableSelect
-              options={datels.map((datel): ScrollableSelectOption => ({
-                value: datel.id,
-                label: datel.nama,
+              options={datels.map((wilayah): ScrollableSelectOption => ({
+                value: wilayah,
+                label: wilayah,
               }))}
               value={form.watch('datel_pemesanan') || ''}
               onChange={(value) => {
