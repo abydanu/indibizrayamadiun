@@ -1010,7 +1010,7 @@ export default function ManageRegistrasi() {
           loading={loading}
           searchKey="nama"
           searchPlaceholder="Cari pelanggan..."
-          emptyMessage="Tidak ada data registrasi."
+          emptyMessage="Tidak ada data Pelanggan"
           loadingComponent={
             <TableSkeleton rows={10} columns={registrasiSkeletonColumns} />
           }

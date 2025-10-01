@@ -333,7 +333,7 @@ export default function ManageKategoriPaket() {
           loading={loading}
           searchKey="nama"
           searchPlaceholder="Cari Kategori..."
-          emptyMessage="Tidak ada data kategori."
+          emptyMessage="Tidak ada data Kategori."
           loadingComponent={<TableSkeleton columns={kategoriSkeletonColumns} />}
           pagination={pagination}
           onPaginationChange={handlePaginationChange}

@@ -754,7 +754,7 @@ export default function ManagePaket() {
           loading={loading}
           searchKey="nama"
           searchPlaceholder="Cari Nama Paket..."
-          emptyMessage="Tidak ada data paket."
+          emptyMessage="Tidak ada data Paket."
           loadingComponent={<TableSkeleton columns={paketSkeletonColumns} />}
           pagination={pagination}
           onPaginationChange={handlePaginationChange}

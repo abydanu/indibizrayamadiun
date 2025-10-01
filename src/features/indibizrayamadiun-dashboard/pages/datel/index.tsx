@@ -496,7 +496,7 @@ export default function ManageDatel() {
           loading={loading}
           searchKey="nama"
           searchPlaceholder="Cari Datel..."
-          emptyMessage="Tidak ada data datel."
+          emptyMessage="Tidak ada data Datel."
           loadingComponent={<TableSkeleton columns={datelSkeletonColumns} />}
           pagination={pagination}
           onPaginationChange={handlePaginationChange}

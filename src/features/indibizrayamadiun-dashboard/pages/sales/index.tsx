@@ -618,7 +618,7 @@ export default function ManageSales() {
           loading={loading}
           searchKey="nama"
           searchPlaceholder="Cari Sales..."
-          emptyMessage="Tidak ada data sales."
+          emptyMessage="Tidak ada data Sales."
           loadingComponent={<TableSkeleton columns={salesSkeletonColumns} />}
           pagination={pagination}
           onPaginationChange={handlePaginationChange}

@@ -78,7 +78,7 @@ export function MultiSelect({
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput placeholder="Search..." />
-            <CommandEmpty>No items found.</CommandEmpty>
+            <CommandEmpty>Tidak ada data untuk di tampilkan</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
               {options.map((option) => (
                 <CommandItem
