@@ -185,18 +185,12 @@ export function FormDialog({
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-0 py-2 sm:py-0">
           <div className="grid gap-4 sm:gap-6">
             {fields.map((field) => (
-              <div
-                key={field.id}
-                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4"
-              >
-                <Label 
-                  htmlFor={field.id} 
-                  className="w-full sm:w-36 lg:w-40 text-left sm:text-right flex-shrink-0 font-medium"
-                >
+              <div key={field.id} className="grid gap-2">
+                <Label htmlFor={field.id}>
                   {field.label}
                   {field.required && <span className="text-red-500 ml-1">*</span>}
                 </Label>
-                <div className="flex-1 min-w-0 overflow-hidden w-full">{renderField(field)}</div>
+                {renderField(field)}
               </div>
             ))}
           </div>
