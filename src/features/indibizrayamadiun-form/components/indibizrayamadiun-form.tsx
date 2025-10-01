@@ -49,11 +49,7 @@ const SmartForm = () => {
       );
       const datelData = (res.data as any).data || [];
 
-      const wilayah: any = Array.from(
-        new Set(datelData.map((item: any) => item.wilayah))
-      )
-
-      setDatels(wilayah);
+      setDatels(datelData);
     } catch (error) {
       console.error('Error fetching datels:', error);
       toast.error('Gagal memuat data datel');

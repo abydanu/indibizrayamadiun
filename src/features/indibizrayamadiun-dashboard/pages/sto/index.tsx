@@ -133,7 +133,7 @@ export default function ManageSTO() {
   const [newSTO, setNewSTO] = React.useState<Omit<STO, 'id' | 'wilayah'>>({
     nama: '',
     kode_sto: '',
-    datel_id: '',
+    wilayah_id: '',
     categori: 'HERO',
     sub_area: 'INNER',
   });
@@ -230,7 +230,7 @@ export default function ManageSTO() {
         setNewSTO({
           nama: '',
           kode_sto: '',
-          datel_id: '',
+          wilayah_id: '',
           categori: 'HERO',
           sub_area: 'INNER',
         });
@@ -344,9 +344,9 @@ export default function ManageSTO() {
                 label: datel.nama,
               })
             )}
-            value={newSTO.datel_id}
+            value={newSTO.wilayah_id}
             onChange={(value) =>
-              setNewSTO((prev) => ({ ...prev, datel_id: value }))
+              setNewSTO((prev) => ({ ...prev, wilayah_id: value }))
             }
             placeholder="Pilih Wilayah..."
             searchPlaceholder="Cari Wilayah..."
