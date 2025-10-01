@@ -285,7 +285,7 @@ export default function ManageSTO() {
       kode_sto: editingSTO.kode_sto,
       nama: editingSTO.nama,
       categori: editingSTO.categori,
-      datel_id: editingSTO.datel_id,
+      wilayah_id: editingSTO.wilayah_id,
       sub_area: editingSTO.sub_area,
     };
 
