@@ -9,6 +9,7 @@ import {
   ChartBarStacked,
   SmartphoneNfc,
   User,
+  Radar
 } from 'lucide-react';
 
 import type { SidebarData } from '../types/sidebar';
@@ -72,9 +73,14 @@ export const sidebarData: SidebarData = {
           ],
         },
         { 
+          title: "STO",
+          url: "/admin/sto",
+          icon: SmartphoneNfc,
+        },
+        { 
           title: "Datel",
           url: "/admin/datel",
-          icon: SmartphoneNfc,
+          icon: Radar,
         },
         { 
           title: "Agency",

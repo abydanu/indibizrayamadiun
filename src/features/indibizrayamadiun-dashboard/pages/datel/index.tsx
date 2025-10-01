@@ -21,11 +21,7 @@ import CustomFileInput from '@/shared/components/custom/custom-file-input';
 
 const datelSkeletonColumns = [
   { width: 'w-4', height: 'h-4' },
-  { width: 'w-[150px]', height: 'h-4' },
-  { width: 'w-[100px]', height: 'h-4' },
-  { width: 'w-[120px]', height: 'h-4' },
-  { width: 'w-[80px]', height: 'h-6', rounded: true },
-  { width: 'w-[70px]', height: 'h-6', rounded: true },
+  { width: 'w-[200px]', height: 'h-4' },
   { width: 'w-8', height: 'h-8' },
 ];
 
@@ -48,70 +44,6 @@ export const createColumns = (
       <div className="font-medium">{row.getValue('nama')}</div>
     ),
   },
-  {
-    accessorKey: 'kode_sto',
-    header: () => <span className="font-extrabold">Kode STO</span>,
-    cell: ({ row }) => (
-      <div className="font-mono font-medium">{row.getValue('kode_sto')}</div>
-    ),
-  },
-  {
-    accessorKey: 'wilayah',
-    header: () => <span className="font-extrabold">Wilayah</span>,
-    cell: ({ row }) => (
-      <div className="max-w-[300px] truncate">{row.getValue('wilayah')}</div>
-    ),
-  },
-  {
-    accessorKey: 'categori',
-    header: () => <span className="font-extrabold">Kategori</span>,
-    cell: ({ row }) => {
-      const kategori = row.getValue('categori') as string;
-      const format = kategori.replace(/_/g, ' ');
-      return (
-        <Badge
-          variant="outline"
-          className={`capitalize font-medium ${
-            kategori === 'HERO'
-              ? 'text-blue-700 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:bg-blue-950/50'
-              : 'text-gray-700 border-gray-200 bg-gray-50 dark:text-gray-400 dark:border-gray-800 dark:bg-gray-950/50'
-          }`}
-        >
-          {format}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: 'sub_area',
-    header: () => <span className="font-extrabold">Sub Area</span>,
-    cell: ({ row }) => {
-      const subArea = row.getValue('sub_area') as string;
-      return (
-        <Badge
-          variant="outline"
-          className="capitalize font-medium text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50"
-        >
-          {subArea}
-        </Badge>
-      );
-    },
-  },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const datel = row.original;
-      return (
-        <ActionDropdown
-          onEdit={() => handleEditDatel(datel)}
-          onDelete={() => handleDeleteDatel(datel.id)}
-          itemName={datel.nama}
-          isSubmitting={isSubmitting}
-        />
-      );
-    },
-  },
 ];
 
 export default function ManageDatel() {
@@ -124,10 +56,6 @@ export default function ManageDatel() {
   const [loading, setLoading] = React.useState(false);
   const [newDatel, setNewDatel] = React.useState<Omit<Datel, 'id'>>({
     nama: '',
-    kode_sto: '',
-    wilayah: '',
-    categori: 'HERO',
-    sub_area: 'INNER',
   });
   const [pagination, setPagination] = React.useState<ServerPaginationState>({
     page: 1,
@@ -144,7 +72,7 @@ export default function ManageDatel() {
         const currentLimit = limit || pagination.limit;
 
         const res = await api.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/datel?page=${currentPage}&limit=${currentLimit}`
+          `${process.env.NEXT_PUBLIC_API_URL}/wilayah?page=${currentPage}&limit=${currentLimit}`
         );
         const data = (res.data as ApiResult<Datel>).result;
         setDatels(data.data);
@@ -177,7 +105,7 @@ export default function ManageDatel() {
     setIsSubmitting(true);
     try {
       const res = await api.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/${datelId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/${datelId}`
       );
       if (res.ok) {
         await fetchDatels();
@@ -199,20 +127,14 @@ export default function ManageDatel() {
     setIsSubmitting(true);
     try {
       const res = await api.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel`,
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah`,
         newDatel
       );
       if (res.ok) {
         await fetchDatels();
         toast.success('Datel berhasil ditambahkan');
         setIsAddDialogOpen(false);
-        setNewDatel({
-          nama: '',
-          kode_sto: '',
-          wilayah: '',
-          categori: 'HERO',
-          sub_area: 'INNER',
-        });
+        setNewDatel({nama: '',});
       }
     } catch (error: any) {
       console.error('Error adding Datel:', error);
@@ -261,11 +183,7 @@ export default function ManageDatel() {
 
     setIsSubmitting(true);
     const updateData = {
-      kode_sto: editingDatel.kode_sto,
       nama: editingDatel.nama,
-      categori: editingDatel.categori,
-      wilayah: editingDatel.wilayah,
-      sub_area: editingDatel.sub_area,
     };
 
     try {
@@ -300,52 +218,7 @@ export default function ManageDatel() {
       onChange: (value) => setNewDatel((prev) => ({ ...prev, nama: value })),
       required: true,
       placeholder: 'Masukkan nama datel',
-    },
-    {
-      id: 'kode_sto',
-      label: 'Kode STO',
-      type: 'text',
-      value: newDatel.kode_sto,
-      onChange: (value) =>
-        setNewDatel((prev) => ({ ...prev, kode_sto: value })),
-      required: true,
-      placeholder: 'Masukkan kode STO',
-    },
-    {
-      id: 'wilayah',
-      label: 'Wilayah',
-      type: 'text',
-      value: newDatel.wilayah,
-      onChange: (value) => setNewDatel((prev) => ({ ...prev, wilayah: value })),
-      required: true,
-      placeholder: 'Masukkan wilayah',
-    },
-    {
-      id: 'categori',
-      label: 'Kategori',
-      type: 'select',
-      value: newDatel.categori,
-      onChange: (value) =>
-        setNewDatel((prev) => ({ ...prev, categori: value })),
-      options: [
-        { value: 'HERO', label: 'HERO' },
-        { value: 'NON_HERO', label: 'NON HERO' },
-      ],
-      required: true,
-    },
-    {
-      id: 'sub_area',
-      label: 'Sub Area',
-      type: 'select',
-      value: newDatel.sub_area,
-      onChange: (value) =>
-        setNewDatel((prev) => ({ ...prev, sub_area: value })),
-      options: [
-        { value: 'INNER', label: 'INNER' },
-        { value: 'OUTER', label: 'OUTER' },
-      ],
-      required: true,
-    },
+    }
   ];
 
   const editFormFields: FormField[] = editingDatel
@@ -359,61 +232,7 @@ export default function ManageDatel() {
             setEditingDatel((prev) => (prev ? { ...prev, nama: value } : null)),
           required: true,
           placeholder: 'Masukkan nama datel',
-        },
-        {
-          id: 'edit-kode_sto',
-          label: 'Kode STO',
-          type: 'text',
-          value: editingDatel.kode_sto,
-          onChange: (value) =>
-            setEditingDatel((prev) =>
-              prev ? { ...prev, kode_sto: value } : null
-            ),
-          required: true,
-          placeholder: 'Masukkan kode STO',
-        },
-        {
-          id: 'edit-wilayah',
-          label: 'Wilayah',
-          type: 'text',
-          value: editingDatel.wilayah,
-          onChange: (value) =>
-            setEditingDatel((prev) =>
-              prev ? { ...prev, wilayah: value } : null
-            ),
-          required: true,
-          placeholder: 'Masukkan wilayah',
-        },
-        {
-          id: 'edit-categori',
-          label: 'Kategori',
-          type: 'select',
-          value: editingDatel.categori,
-          onChange: (value) =>
-            setEditingDatel((prev) =>
-              prev ? { ...prev, categori: value } : null
-            ),
-          options: [
-            { value: 'HERO', label: 'HERO' },
-            { value: 'NON_HERO', label: 'NON HERO' },
-          ],
-          required: true,
-        },
-        {
-          id: 'edit-sub_area',
-          label: 'Sub Area',
-          type: 'select',
-          value: editingDatel.sub_area,
-          onChange: (value) =>
-            setEditingDatel((prev) =>
-              prev ? { ...prev, sub_area: value } : null
-            ),
-          options: [
-            { value: 'INNER', label: 'INNER' },
-            { value: 'OUTER', label: 'OUTER' },
-          ],
-          required: true,
-        },
+        }
       ]
     : [];
 

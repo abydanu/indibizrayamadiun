@@ -2,22 +2,22 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get('token')?.value;
+  // const token = req.cookies.get('token')?.value;
 
-  if(req.nextUrl.pathname.startsWith('/login')){
-    if(token) {
-      return NextResponse.redirect(new URL('/admin/dasbor', req.url));
-    }
-    return NextResponse.next()
-  }
+  // if(req.nextUrl.pathname.startsWith('/login')){
+  //   if(token) {
+  //     return NextResponse.redirect(new URL('/admin/dasbor', req.url));
+  //   }
+  //   return NextResponse.next()
+  // }
 
-  if (!token && req.nextUrl.pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+  // if (!token && req.nextUrl.pathname.startsWith("/admin")) {
+  //   return NextResponse.redirect(new URL('/login', req.url));
+  // }
 
-  return NextResponse.next();
+  // return NextResponse.next();
 }
 
-export const config = {
-  matcher: ['/admin/:path*', '/login'],
-};
+// export const config = {
+//   matcher: ['/admin/:path*', '/login'],
+// };

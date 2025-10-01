@@ -5,7 +5,7 @@ import { useSmartForm, SmartFormData } from '../hooks/use-smart-form';
 import { useSmartFormStore } from '../store/use-smart-form-store';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
-import type { Datel } from '@/features/indibizrayamadiun-dashboard/types/sales';
+import type { Datel } from '@/features/indibizrayamadiun-dashboard/types/datel';
 import type { Paket } from '@/features/indibizrayamadiun-dashboard/types/paket';
 import type { Sales } from '@/features/indibizrayamadiun-dashboard/types/sales';
 import FormStepper from './steps/form-stepper';
@@ -45,7 +45,7 @@ const SmartForm = () => {
     setLoadingDatels(true);
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/list`
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`
       );
       const datelData = (res.data as any).data || [];
 

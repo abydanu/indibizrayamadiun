@@ -25,7 +25,8 @@ const breadcrumbMap: Record<string, string> = {
   datel: 'Datel',
   agency: 'Agency',
   sales: 'Sales',
-  pelanggan: 'Pelanggan'
+  pelanggan: 'Pelanggan',
+  sto: 'STO'
 }
 
 export function PageBreadcrumb() {

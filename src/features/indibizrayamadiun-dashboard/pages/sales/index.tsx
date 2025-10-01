@@ -20,10 +20,11 @@ import { Checkbox } from '@/shared/ui/checkbox';
 import { Badge } from '@/shared/ui/badge';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
-import type { Sales, Agency, Datel } from '../../types/sales';
+import type { Sales, Agency } from '../../types/sales';
 import { ApiResult } from '../../types/api';
 import { getDisplayErrorMessage } from '@/utils/api-error';
 import CustomFileInput from '@/shared/components/custom/custom-file-input';
+import { Datel } from '../../types/datel';
 
 const salesSkeletonColumns = [
   { width: 'w-4', height: 'h-4' },
@@ -82,6 +83,14 @@ export const createColumns = (
     cell: ({ row }) => {
       const datel = row.getValue('datel') as Datel;
       return <div>{datel?.nama || '-'}</div>;
+    },
+  },
+  {
+    accessorKey: 'kat_umur_sa',
+    header: () => <span className="font-extrabold">Kat. Umur. SA</span>,
+    cell: ({ row }) => {
+      const datel = row.getValue('kat_umur_sa') as Datel;
+      return <div>{row.getValue("kat_umur_sa")}</div>;
     },
   },
   {
@@ -199,14 +208,10 @@ export default function ManageSales() {
   const fetchDatels = React.useCallback(async () => {
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/list`
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`
       );
       const datelData = (res.data as any).data || [];
-
-      const wilayah: any = Array.from(
-        new Set(datelData.map((item: any) => item.wilayah))
-      );
-      setDatels(wilayah);
+      setDatels(datelData);
     } catch (error) {
       console.error('Error fetching datels:', error);
     }

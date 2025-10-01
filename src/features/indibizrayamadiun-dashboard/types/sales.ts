@@ -1,5 +1,3 @@
-
-
 export interface Agency {
   id: string
   nama: string
