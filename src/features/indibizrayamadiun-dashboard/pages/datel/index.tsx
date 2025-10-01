@@ -34,84 +34,85 @@ export const createColumns = (
   handleDeleteDatel: (datelId: string) => void,
   isSubmitting: boolean
 ): ColumnDef<Datel>[] => [
-    {
-      id: 'select',
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'nama',
-      header: () => <span className="font-extrabold">Nama</span>,
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue('nama')}</div>
-      ),
-    },
-    {
-      accessorKey: 'kode_sto',
-      header: () => <span className="font-extrabold">Kode STO</span>,
-      cell: ({ row }) => (
-        <div className="font-mono font-medium">{row.getValue('kode_sto')}</div>
-      ),
-    },
-    {
-      accessorKey: 'wilayah',
-      header: () => <span className="font-extrabold">Wilayah</span>,
-      cell: ({ row }) => (
-        <div className="max-w-[300px] truncate">{row.getValue('wilayah')}</div>
-      ),
-    },
-    {
-      accessorKey: 'categori',
-      header: () => <span className="font-extrabold">Kategori</span>,
-      cell: ({ row }) => {
-        const kategori = row.getValue('categori') as string;
-        const format = kategori.replace(/_/g, ' ');
-        return (
-          <Badge
-            variant="outline"
-            className={`capitalize font-medium ${kategori === 'HERO'
+  {
+    id: 'select',
+    header: '#',
+    cell: ({ row }) => row.index + 1,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'nama',
+    header: () => <span className="font-extrabold">Nama</span>,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue('nama')}</div>
+    ),
+  },
+  {
+    accessorKey: 'kode_sto',
+    header: () => <span className="font-extrabold">Kode STO</span>,
+    cell: ({ row }) => (
+      <div className="font-mono font-medium">{row.getValue('kode_sto')}</div>
+    ),
+  },
+  {
+    accessorKey: 'wilayah',
+    header: () => <span className="font-extrabold">Wilayah</span>,
+    cell: ({ row }) => (
+      <div className="max-w-[300px] truncate">{row.getValue('wilayah')}</div>
+    ),
+  },
+  {
+    accessorKey: 'categori',
+    header: () => <span className="font-extrabold">Kategori</span>,
+    cell: ({ row }) => {
+      const kategori = row.getValue('categori') as string;
+      const format = kategori.replace(/_/g, ' ');
+      return (
+        <Badge
+          variant="outline"
+          className={`capitalize font-medium ${
+            kategori === 'HERO'
               ? 'text-blue-700 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:bg-blue-950/50'
               : 'text-gray-700 border-gray-200 bg-gray-50 dark:text-gray-400 dark:border-gray-800 dark:bg-gray-950/50'
-              }`}
-          >
-            {format}
-          </Badge>
-        );
-      },
+          }`}
+        >
+          {format}
+        </Badge>
+      );
     },
-    {
-      accessorKey: 'sub_area',
-      header: () => <span className="font-extrabold">Sub Area</span>,
-      cell: ({ row }) => {
-        const subArea = row.getValue('sub_area') as string;
-        return (
-          <Badge
-            variant="outline"
-            className="capitalize font-medium text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50"
-          >
-            {subArea}
-          </Badge>
-        );
-      },
+  },
+  {
+    accessorKey: 'sub_area',
+    header: () => <span className="font-extrabold">Sub Area</span>,
+    cell: ({ row }) => {
+      const subArea = row.getValue('sub_area') as string;
+      return (
+        <Badge
+          variant="outline"
+          className="capitalize font-medium text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50"
+        >
+          {subArea}
+        </Badge>
+      );
     },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const datel = row.original;
-        return (
-          <ActionDropdown
-            onEdit={() => handleEditDatel(datel)}
-            onDelete={() => handleDeleteDatel(datel.id)}
-            itemName={datel.nama}
-            isSubmitting={isSubmitting}
-          />
-        );
-      },
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const datel = row.original;
+      return (
+        <ActionDropdown
+          onEdit={() => handleEditDatel(datel)}
+          onDelete={() => handleDeleteDatel(datel.id)}
+          itemName={datel.nama}
+          isSubmitting={isSubmitting}
+        />
+      );
     },
-  ];
+  },
+];
 
 export default function ManageDatel() {
   const [datels, setDatels] = React.useState<Datel[]>([]);
@@ -213,11 +214,11 @@ export default function ManageDatel() {
           sub_area: 'INNER',
         });
       }
-    } catch (error) {
-      console.error('Error adding datel:', error);
+    } catch (error: any) {
+      console.error('Error adding Datel:', error);
       const errorMessage = getDisplayErrorMessage(
         error,
-        'Error saat menghapus paket'
+        'Error saat menambahkan Datel'
       );
       toast.error(errorMessage);
     } finally {
@@ -349,71 +350,71 @@ export default function ManageDatel() {
 
   const editFormFields: FormField[] = editingDatel
     ? [
-      {
-        id: 'edit-nama_datel',
-        label: 'Nama Datel',
-        type: 'text',
-        value: editingDatel.nama,
-        onChange: (value) =>
-          setEditingDatel((prev) => (prev ? { ...prev, nama: value } : null)),
-        required: true,
-        placeholder: 'Masukkan nama datel',
-      },
-      {
-        id: 'edit-kode_sto',
-        label: 'Kode STO',
-        type: 'text',
-        value: editingDatel.kode_sto,
-        onChange: (value) =>
-          setEditingDatel((prev) =>
-            prev ? { ...prev, kode_sto: value } : null
-          ),
-        required: true,
-        placeholder: 'Masukkan kode STO',
-      },
-      {
-        id: 'edit-wilayah',
-        label: 'Wilayah',
-        type: 'text',
-        value: editingDatel.wilayah,
-        onChange: (value) =>
-          setEditingDatel((prev) =>
-            prev ? { ...prev, wilayah: value } : null
-          ),
-        required: true,
-        placeholder: 'Masukkan wilayah',
-      },
-      {
-        id: 'edit-categori',
-        label: 'Kategori',
-        type: 'select',
-        value: editingDatel.categori,
-        onChange: (value) =>
-          setEditingDatel((prev) =>
-            prev ? { ...prev, categori: value } : null
-          ),
-        options: [
-          { value: 'HERO', label: 'HERO' },
-          { value: 'NON_HERO', label: 'NON HERO' },
-        ],
-        required: true,
-      },
-      {
-        id: 'edit-sub_area',
-        label: 'Sub Area',
-        type: 'select',
-        value: editingDatel.sub_area,
-        onChange: (value) =>
-          setEditingDatel((prev) =>
-            prev ? { ...prev, sub_area: value } : null
-          ),
-        options: [
-          { value: 'INNER', label: 'INNER' },
-          { value: 'OUTER', label: 'OUTER' },
-        ],
-        required: true,
-      },
-    ]
+        {
+          id: 'edit-nama_datel',
+          label: 'Nama Datel',
+          type: 'text',
+          value: editingDatel.nama,
+          onChange: (value) =>
+            setEditingDatel((prev) => (prev ? { ...prev, nama: value } : null)),
+          required: true,
+          placeholder: 'Masukkan nama datel',
+        },
+        {
+          id: 'edit-kode_sto',
+          label: 'Kode STO',
+          type: 'text',
+          value: editingDatel.kode_sto,
+          onChange: (value) =>
+            setEditingDatel((prev) =>
+              prev ? { ...prev, kode_sto: value } : null
+            ),
+          required: true,
+          placeholder: 'Masukkan kode STO',
+        },
+        {
+          id: 'edit-wilayah',
+          label: 'Wilayah',
+          type: 'text',
+          value: editingDatel.wilayah,
+          onChange: (value) =>
+            setEditingDatel((prev) =>
+              prev ? { ...prev, wilayah: value } : null
+            ),
+          required: true,
+          placeholder: 'Masukkan wilayah',
+        },
+        {
+          id: 'edit-categori',
+          label: 'Kategori',
+          type: 'select',
+          value: editingDatel.categori,
+          onChange: (value) =>
+            setEditingDatel((prev) =>
+              prev ? { ...prev, categori: value } : null
+            ),
+          options: [
+            { value: 'HERO', label: 'HERO' },
+            { value: 'NON_HERO', label: 'NON HERO' },
+          ],
+          required: true,
+        },
+        {
+          id: 'edit-sub_area',
+          label: 'Sub Area',
+          type: 'select',
+          value: editingDatel.sub_area,
+          onChange: (value) =>
+            setEditingDatel((prev) =>
+              prev ? { ...prev, sub_area: value } : null
+            ),
+          options: [
+            { value: 'INNER', label: 'INNER' },
+            { value: 'OUTER', label: 'OUTER' },
+          ],
+          required: true,
+        },
+      ]
     : [];
 
   const columns = React.useMemo(
@@ -458,7 +459,9 @@ export default function ManageDatel() {
                     onChange={(file) => setImportFile(file)}
                     accept=".xls,.xlsx,.csv"
                   />
-                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Format: .xls, .xlsx, .csv
+                  </div>
                 </div>
               ),
             } as FormField,

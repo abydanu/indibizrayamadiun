@@ -361,13 +361,13 @@ export default function ManagePaket() {
       } else {
         toast.error('Gagal menambahkan paket');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding paket:', error);
       const errorMessage = getDisplayErrorMessage(
         error,
         'Error saat menambahkan paket'
       );
-      toast.error('Error :', errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

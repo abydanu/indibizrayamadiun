@@ -268,7 +268,7 @@ export default function ManageSales() {
       console.error('Error adding sales:', error);
       const errorMessage = getDisplayErrorMessage(
         error,
-        'Error saat menghapus paket'
+        'Error saat menghapus Sales'
       );
       toast.error(errorMessage);
     } finally {
