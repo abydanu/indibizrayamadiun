@@ -188,9 +188,9 @@ export default function ManageSales() {
   const fetchAgencies = React.useCallback(async () => {
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/agenc?limit=1000`
+        `${process.env.NEXT_PUBLIC_API_URL}/agenc/list`
       );
-      setAgencies((res.data as ApiResult<Agency>).result.data || []);
+      setAgencies((res.data as any).data || []);
     } catch (error) {
       console.error('Error fetching agencies:', error);
     }
@@ -394,9 +394,9 @@ export default function ManageSales() {
         <div className="col-span-3">
           <ScrollableSelect
             options={datels.map(
-              (datel): ScrollableSelectOption => ({
-                value: datel.id,
-                label: datel.nama,
+              (wilayah): ScrollableSelectOption => ({
+                value: wilayah,
+                label: wilayah,
               })
             )}
             value={newSales.datel_id}
