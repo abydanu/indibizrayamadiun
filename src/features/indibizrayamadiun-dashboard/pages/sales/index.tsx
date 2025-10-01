@@ -199,7 +199,7 @@ export default function ManageSales() {
   const fetchDatels = React.useCallback(async () => {
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel?limit=1000`
+        `${process.env.NEXT_PUBLIC_API_URL}/datel/list`
       );
       const datelData = (res.data as any).data || [];
 
