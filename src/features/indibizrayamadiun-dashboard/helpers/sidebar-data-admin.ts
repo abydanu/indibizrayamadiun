@@ -73,17 +73,17 @@ export const sidebarData: SidebarData = {
           ],
         },
         { 
-          title: "STO",
-          url: "/admin/sto",
-          icon: SmartphoneNfc,
-        },
-        { 
           title: "Datel",
           url: "/admin/datel",
           icon: Radar,
         },
         { 
-          title: "Agency",
+          title: "STO",
+          url: "/admin/sto",
+          icon: SmartphoneNfc,
+        },
+        { 
+          title: "Agensi",
           url: "/admin/agency",
           icon: UserStar,
         },

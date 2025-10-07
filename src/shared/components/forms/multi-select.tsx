@@ -41,6 +41,7 @@ export function MultiSelect({
   disabled = false,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
+  const [searchValue, setSearchValue] = React.useState("")
 
   const handleSelect = (selectedValue: string) => {
     if (value.includes(selectedValue)) {
@@ -54,7 +55,22 @@ export function MultiSelect({
     onChange(value.filter((item) => item !== valueToRemove))
   }
 
+  // Manual filtering for better performance with large datasets
+  const filteredOptions = React.useMemo(() => {
+    if (!searchValue) return options
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(searchValue.toLowerCase())
+    )
+  }, [options, searchValue])
+
   const selectedOptions = options.filter((option) => value.includes(option.value))
+
+  // Reset search when popover closes
+  React.useEffect(() => {
+    if (!open) {
+      setSearchValue("")
+    }
+  }, [open])
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -75,26 +91,41 @@ export function MultiSelect({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Search..." />
+        <PopoverContent 
+          className="p-0 w-full" 
+          style={{ width: 'var(--radix-popover-trigger-width)' }}
+        >
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder="Search..." 
+              value={searchValue}
+              onValueChange={setSearchValue}
+            />
             <CommandEmpty>Tidak ada data untuk di tampilkan</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={() => handleSelect(option.value)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value.includes(option.value) ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
+            <CommandGroup>
+              <div 
+                className="overflow-y-scroll overflow-x-hidden"
+                style={{ 
+                  maxHeight: '300px',
+                  overflowY: 'scroll'
+                }}
+              >
+                {filteredOptions.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={() => handleSelect(option.value)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value.includes(option.value) ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </div>
             </CommandGroup>
           </Command>
         </PopoverContent>

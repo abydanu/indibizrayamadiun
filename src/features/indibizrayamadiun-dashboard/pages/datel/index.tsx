@@ -9,10 +9,11 @@ import {
   ActionDropdown,
   type ServerPaginationState,
 } from '@/shared/components/data-table';
-import { FormDialog, FormField } from '@/shared/components/forms';
+import { FormDialog, FormField, MultiScrollableSelect } from '@/shared/components/forms';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/shared/ui/badge';
 import type { Datel } from '@/features/indibizrayamadiun-dashboard/types/datel';
+import type { STO } from '@/features/indibizrayamadiun-dashboard/types/sto';
 import type { ApiResult } from '../../types/api';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
@@ -21,6 +22,7 @@ import CustomFileInput from '@/shared/components/custom/custom-file-input';
 
 const datelSkeletonColumns = [
   { width: 'w-4', height: 'h-4' },
+  { width: 'w-[100px]', height: 'h-4' },
   { width: 'w-[200px]', height: 'h-4' },
   { width: 'w-8', height: 'h-8' },
 ];
@@ -39,10 +41,48 @@ export const createColumns = (
   },
   {
     accessorKey: 'nama',
-    header: () => <span className="font-extrabold">Nama</span>,
+    header: () => <span className="font-extrabold">Wilayah</span>,
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue('nama')}</div>
     ),
+  },
+  {
+    accessorKey: 'stos',
+    header: () => <span className="font-extrabold">STO</span>,
+    cell: ({ row }) => {
+      const stos = row.getValue('stos') as Datel['stos'];
+      if (!stos || stos.length === 0) {
+        return <span className="text-muted-foreground text-xs">-</span>;
+      }
+      return (
+        <div className="flex flex-wrap gap-1">
+          {stos.map((s) => (
+            <Badge 
+              key={s.id} 
+              variant="secondary" 
+              className="text-xs font-medium"
+            >
+              {s.sto.abbreviation}
+            </Badge>
+          ))}
+        </div>
+      );
+    },
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const datel = row.original as Datel;
+      return (
+        <ActionDropdown
+          onEdit={() => handleEditDatel(datel)}
+          onDelete={() => handleDeleteDatel(datel.id)}
+          itemName={datel.nama}
+          isSubmitting={isSubmitting}
+        />
+      );
+    },
   },
 ];
 
@@ -54,7 +94,9 @@ export default function ManageDatel() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [newDatel, setNewDatel] = React.useState<Omit<Datel, 'id'>>({
+  const [stos, setStos] = React.useState<STO[]>([]);
+  const [selectedStoIds, setSelectedStoIds] = React.useState<string[]>([]);
+  const [newDatel, setNewDatel] = React.useState<Omit<Datel, 'id' | 'created_at' | 'updated_at' | 'stos'>>({
     nama: '',
   });
   const [pagination, setPagination] = React.useState<ServerPaginationState>({
@@ -63,6 +105,19 @@ export default function ManageDatel() {
     total: 0,
     totalPages: 0,
   });
+
+  const fetchStos = React.useCallback(async () => {
+    try {
+      const res = await api.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/sto?limit=1000`
+      );
+      const data = (res.data as ApiResult<STO>).result;
+      setStos(data.data);
+    } catch (error) {
+      console.error('Error fetching STOs:', error);
+      toast.error('Gagal memuat data STO');
+    }
+  }, []);
 
   const fetchDatels = React.useCallback(
     async (page?: number, limit?: number) => {
@@ -84,7 +139,7 @@ export default function ManageDatel() {
         });
       } catch (error) {
         console.error('Error fetching datels:', error);
-        toast.error('Gagal memuat data datel');
+        toast.error('Gagal memuat data wilayah');
       } finally {
         setLoading(false);
       }
@@ -97,7 +152,9 @@ export default function ManageDatel() {
   };
 
   const handleEditDatel = (datel: Datel) => {
+    const stoIds = datel.stos?.map(s => s.sto.id) || [];
     setEditingDatel(datel);
+    setSelectedStoIds(stoIds);
     setIsEditDialogOpen(true);
   };
 
@@ -109,13 +166,13 @@ export default function ManageDatel() {
       );
       if (res.ok) {
         await fetchDatels();
-        toast.success('Datel berhasil dihapus');
+        toast.success('Wilayah berhasil dihapus');
       }
     } catch (error) {
       console.error('Error deleting datel:', error);
       const errorMessage = getDisplayErrorMessage(
         error,
-        'Error saat menghapus paket'
+        'Error saat menghapus wilayah'
       );
       toast.error(errorMessage);
     } finally {
@@ -126,21 +183,29 @@ export default function ManageDatel() {
   const handleAddDatel = async () => {
     setIsSubmitting(true);
     try {
+
+      const requestBody = {
+        ...newDatel,
+        sto_ids: selectedStoIds.length > 0 ? selectedStoIds : undefined
+      };
+      
       const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_URL}/wilayah`,
-        newDatel
+        requestBody,
+        { timeout: 60000 }
       );
       if (res.ok) {
         await fetchDatels();
-        toast.success('Datel berhasil ditambahkan');
+        toast.success('Wilayah berhasil ditambahkan');
         setIsAddDialogOpen(false);
-        setNewDatel({nama: '',});
+        setNewDatel({ nama: '' });
+        setSelectedStoIds([]);
       }
     } catch (error: any) {
-      console.error('Error adding Datel:', error);
+      console.error('Error adding Wilayah:', error);
       const errorMessage = getDisplayErrorMessage(
         error,
-        'Error saat menambahkan Datel'
+        'Error saat menambahkan Wilayah'
       );
       toast.error(errorMessage);
     } finally {
@@ -160,7 +225,7 @@ export default function ManageDatel() {
       const formData = new FormData();
       formData.append('file', importFile);
       const res = await api.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/import`,
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/import`,
         formData,
         { timeout: 120000 }
       );
@@ -182,26 +247,32 @@ export default function ManageDatel() {
     if (!editingDatel || !datelId) return;
 
     setIsSubmitting(true);
+    
+    // Send sto_ids directly in the PUT body, just like CREATE
     const updateData = {
       nama: editingDatel.nama,
+      sto_ids: selectedStoIds,
     };
 
     try {
       const res = await api.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/${datelId}`,
-        updateData
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/${datelId}`,
+        updateData,
+        { timeout: 60000 }
       );
+      
       if (res.ok) {
         await fetchDatels();
-        toast.success('Datel berhasil diperbarui');
+        toast.success('Wilayah berhasil diperbarui');
         setIsEditDialogOpen(false);
         setEditingDatel(null);
+        setSelectedStoIds([]);
       }
     } catch (error) {
       console.error('Error updating datel:', error);
       const errorMessage = getDisplayErrorMessage(
         error,
-        'Error saat menghapus paket'
+        'Error saat memperbarui wilayah'
       );
       toast.error(errorMessage);
     } finally {
@@ -218,7 +289,25 @@ export default function ManageDatel() {
       onChange: (value) => setNewDatel((prev) => ({ ...prev, nama: value })),
       required: true,
       placeholder: 'Masukkan nama datel',
-    }
+    },
+    {
+      id: 'stos',
+      label: 'STO',
+      type: 'custom',
+      customComponent: (
+        <MultiScrollableSelect
+          options={stos.map(sto => ({
+            value: sto.id,
+            label: `${sto.name} (${sto.abbreviation})`
+          }))}
+          value={selectedStoIds}
+          onChange={setSelectedStoIds}
+          placeholder="Pilih STO..."
+          searchPlaceholder="Cari STO..."
+          emptyMessage="Tidak ada STO ditemukan"
+        />
+      ),
+    } as FormField,
   ];
 
   const editFormFields: FormField[] = editingDatel
@@ -232,7 +321,25 @@ export default function ManageDatel() {
             setEditingDatel((prev) => (prev ? { ...prev, nama: value } : null)),
           required: true,
           placeholder: 'Masukkan nama datel',
-        }
+        },
+        {
+          id: 'edit-stos',
+          label: 'STO',
+          type: 'custom',
+          customComponent: (
+            <MultiScrollableSelect
+              options={stos.map(sto => ({
+                value: sto.id,
+                label: `${sto.name} (${sto.abbreviation})`
+              }))}
+              value={selectedStoIds}
+              onChange={setSelectedStoIds}
+              placeholder="Pilih STO..."
+              searchPlaceholder="Cari STO..."
+              emptyMessage="Tidak ada STO ditemukan"
+            />
+          ),
+        } as FormField,
       ]
     : [];
 
@@ -243,15 +350,16 @@ export default function ManageDatel() {
 
   React.useEffect(() => {
     fetchDatels();
+    fetchStos();
   }, []);
 
   return (
     <>
-      <PageHeader title="Kelola Datel" />
+      <PageHeader title="Kelola Wilayah Datel" />
       <Main>
         <PageTitle
-          title="Kelola Datel"
-          description="Kelola data datel (Divisi Akses Telekomunikasi)"
+          title="Kelola Wilayah Datel"
+          description="Kelola Wilayah Datel (Divisi Akses Telekomunikasi)"
           showAddButton
           addButtonText="Tambah Data"
           showImportButton
@@ -279,7 +387,7 @@ export default function ManageDatel() {
                     accept=".xls,.xlsx,.csv"
                   />
                   <div className="text-xs text-gray-500 mt-2">
-                    Format: .xls, .xlsx, .csv
+                    Format: .xls, .xlsx
                   </div>
                 </div>
               ),
@@ -292,18 +400,32 @@ export default function ManageDatel() {
 
         <FormDialog
           open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Datel Baru"
-          description="Buat data datel baru. Isi semua informasi yang diperlukan."
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              // Reset when dialog closes
+              setNewDatel({ nama: '' });
+              setSelectedStoIds([]);
+            }
+          }}
+          title="Tambah Wilayah Baru"
+          description="Buat data wilayah baru. Isi semua informasi yang diperlukan."
           fields={addFormFields}
           onSubmit={handleAddDatel}
-          submitText="Tambah Datel"
+          submitText="Tambah Wilayah"
           isSubmitting={isSubmitting}
         />
 
         <FormDialog
           open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
+          onOpenChange={(open) => {
+            setIsEditDialogOpen(open);
+            if (!open) {
+              // Reset when dialog closes
+              setEditingDatel(null);
+              setSelectedStoIds([]);
+            }
+          }}
           title="Edit Datel"
           description="Ubah informasi datel. Klik simpan setelah selesai."
           fields={editFormFields}

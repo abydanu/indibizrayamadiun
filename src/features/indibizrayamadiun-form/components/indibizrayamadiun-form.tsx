@@ -5,7 +5,6 @@ import { useSmartForm, SmartFormData } from '../hooks/use-smart-form';
 import { useSmartFormStore } from '../store/use-smart-form-store';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
-import type { Datel } from '@/features/indibizrayamadiun-dashboard/types/datel';
 import type { Paket } from '@/features/indibizrayamadiun-dashboard/types/paket';
 import type { Sales } from '@/features/indibizrayamadiun-dashboard/types/sales';
 import FormStepper from './steps/form-stepper';
@@ -13,6 +12,7 @@ import FormNavigation from './steps/form-navigation';
 import Step1InformasiUsaha from './steps/step-1';
 import Step2DataPIC from './steps/step-2';
 import Step3PaketSales from './steps/step-3';
+import { Datel } from '@/features/indibizrayamadiun-dashboard/types/datel';
 
 const SmartForm = () => {
   const [tooltipFotoLokasi, setTooltipFotoLokasi] = useState(true);
@@ -47,9 +47,9 @@ const SmartForm = () => {
       const res = await api.get(
         `${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`
       );
-      const datelData = (res.data as any).data || [];
-
-      setDatels(datelData);
+      const data = (res.data as any).data || [];
+      console.log(data);
+      setDatels(data);
     } catch (error) {
       console.error('Error fetching datels:', error);
       toast.error('Gagal memuat data datel');
@@ -132,12 +132,12 @@ const SmartForm = () => {
       form.setValue('nama_sales', selectedSalesData.nama);
       form.setValue('kode_sales', selectedSalesData.kode_sales || '');
       form.setValue('agency', selectedSalesData.agency?.nama || '');
-      form.setValue('asal_datel', selectedSalesData.datel?.nama || '');
+      form.setValue('asal_datel', selectedSalesData.wilayah?.nama || '');
 
       updateFormField('nama_sales', selectedSalesData.nama);
       updateFormField('kode_sales', selectedSalesData.kode_sales || '');
       updateFormField('agency', selectedSalesData.agency?.nama || '');
-      updateFormField('asal_datel', selectedSalesData.datel?.nama || '');
+      updateFormField('asal_datel', selectedSalesData.wilayah?.nama || '');
 
       setSelectedSales(selectedSalesData.nama);
       const hasCode = !!(

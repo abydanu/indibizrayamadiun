@@ -42,145 +42,149 @@ export const createColumns = (
   handleDeletePaket: (paketId: string) => Promise<void>,
   isSubmitting: boolean
 ): ColumnDef<Paket>[] => [
-    {
-      id: 'select',
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      enableSorting: false,
-      enableHiding: false,
+  {
+    id: 'select',
+    header: '#',
+    cell: ({ row }) => row.index + 1,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'nama',
+    header: () => <span className="font-extrabold">Nama Paket</span>,
+    cell: ({ row }) => <div>{row.getValue('nama')}</div>,
+  },
+  {
+    accessorKey: 'bandwith',
+    header: () => <span className="font-extrabold">Bandwidth</span>,
+    cell: ({ row }) => <div>{row.getValue('bandwith')} Mbps</div>,
+  },
+  {
+    accessorKey: 'price',
+    header: () => <span className="font-extrabold">Harga Paket</span>,
+    cell: ({ row }) => {
+      const amount = parseInt(row.getValue('price') as string);
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(amount);
+      return <div>{formatted}</div>;
     },
-    {
-      accessorKey: 'nama',
-      header: () => <span className="font-extrabold">Nama Paket</span>,
-      cell: ({ row }) => <div>{row.getValue('nama')}</div>,
+  },
+  {
+    accessorKey: 'price_psb',
+    header: () => <span className="font-extrabold">Harga PSB</span>,
+    cell: ({ row }) => {
+      const amount = parseInt(row.getValue('price_psb') as string);
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(amount);
+      return <div>{formatted}</div>;
     },
-    {
-      accessorKey: 'bandwith',
-      header: () => <span className="font-extrabold">Bandwidth</span>,
-      cell: ({ row }) => <div>{row.getValue('bandwith')} Mbps</div>,
+  },
+  {
+    accessorKey: 'ppn',
+    header: () => <span className="font-extrabold">PPN (%)</span>,
+    cell: ({ row }) => {
+      const ppn = row.getValue('ppn') as number;
+      return <div>{ppn}%</div>;
     },
-    {
-      accessorKey: 'price',
-      header: () => <span className="font-extrabold">Harga Paket</span>,
-      cell: ({ row }) => {
-        const amount = parseInt(row.getValue('price') as string);
-        const formatted = new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(amount);
-        return <div>{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: 'price_psb',
-      header: () => <span className="font-extrabold">Harga PSB</span>,
-      cell: ({ row }) => {
-        const amount = parseInt(row.getValue('price_psb') as string);
-        const formatted = new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(amount);
-        return <div>{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: 'ppn',
-      header: () => <span className="font-extrabold">PPN (%)</span>,
-      cell: ({ row }) => {
-        const ppn = row.getValue('ppn') as number;
-        return <div>{ppn}%</div>;
-      },
-    },
-    {
-      accessorKey: 'categories',
-      header: () => <span className="font-extrabold">Kategori</span>,
-      cell: ({ row }) => {
-        const categories = row.getValue('categories') as Kategori[];
-        return (
-          <div className="flex flex-wrap gap-1">
-            {categories.map((kategori) => (
-              <Badge key={kategori.id} variant="outline" className="text-xs">
-                {kategori.nama}
-              </Badge>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'applied_promos',
-      header: () => <span className="font-extrabold">Promo</span>,
-      cell: ({ row }) => {
-        const promos = row.getValue('applied_promos') as Promo[];
-        if (!promos || promos.length === 0) {
-          return (
-            <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
-              Tidak ada promo
+  },
+  {
+    accessorKey: 'categories',
+    header: () => <span className="font-extrabold">Kategori</span>,
+    cell: ({ row }) => {
+      const categories = row.getValue('categories') as Kategori[];
+      return (
+        <div className="flex flex-wrap gap-1">
+          {categories.map((kategori) => (
+            <Badge key={kategori.id} variant="outline" className="text-xs">
+              {kategori.nama}
             </Badge>
-          );
-        }
-        return (
-          <div className="flex flex-wrap gap-1">
-            {promos.map((promo) => (
-              <Badge
-                key={promo.id}
-                variant="outline"
-                className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
-              >
-                {promo.nama} ({promo.diskon}%)
-              </Badge>
-            ))}
-          </div>
-        );
-      },
+          ))}
+        </div>
+      );
     },
-    {
-      accessorKey: 'final_price',
-      header: () => <span className="font-extrabold">Harga Total</span>,
-      cell: ({ row }) => {
-        const amount = parseInt(row.getValue('final_price') as string);
-        const formatted = new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(amount);
-        return <div>{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: 'is_show',
-      header: () => <span className="font-extrabold">Tampilkan</span>,
-      cell: ({ row }) => {
-        const isShow = row.getValue('is_show') as boolean;
-
+  },
+  {
+    accessorKey: 'applied_promos',
+    header: () => <span className="font-extrabold">Promo</span>,
+    cell: ({ row }) => {
+      const promos = row.getValue('applied_promos') as Promo[];
+      if (!promos || promos.length === 0) {
         return (
           <Badge
             variant="outline"
-            className={`capitalize font-medium ${isShow
-                ? 'text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50'
-                : 'text-red-700 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/50'
-              }`}
+            className="text-xs bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
           >
-            {isShow ? 'Aktif' : 'Hide'}
+            Tidak ada promo
           </Badge>
         );
-      },
+      }
+      return (
+        <div className="flex flex-wrap gap-1">
+          {promos.map((promo) => (
+            <Badge
+              key={promo.id}
+              variant="outline"
+              className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
+            >
+              {promo.nama} ({promo.diskon}%)
+            </Badge>
+          ))}
+        </div>
+      );
     },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const paket = row.original;
-        return (
-          <ActionDropdown
-            onEdit={() => handleEditPaket(paket)}
-            onDelete={() => handleDeletePaket(paket.id)}
-            itemName={paket.nama}
-            isSubmitting={isSubmitting}
-          />
-        );
-      },
+  },
+  {
+    accessorKey: 'final_price',
+    header: () => <span className="font-extrabold">Harga Total</span>,
+    cell: ({ row }) => {
+      const amount = parseInt(row.getValue('final_price') as string);
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(amount);
+      return <div>{formatted}</div>;
     },
-  ];
+  },
+  {
+    accessorKey: 'is_show',
+    header: () => <span className="font-extrabold">Tampilkan</span>,
+    cell: ({ row }) => {
+      const isShow = row.getValue('is_show') as boolean;
+
+      return (
+        <Badge
+          variant="outline"
+          className={`capitalize font-medium ${
+            isShow
+              ? 'text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50'
+              : 'text-red-700 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/50'
+          }`}
+        >
+          {isShow ? 'Aktif' : 'Hide'}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const paket = row.original;
+      return (
+        <ActionDropdown
+          onEdit={() => handleEditPaket(paket)}
+          onDelete={() => handleDeletePaket(paket.id)}
+          itemName={paket.nama}
+          isSubmitting={isSubmitting}
+        />
+      );
+    },
+  },
+];
 
 export default function ManagePaket() {
   const [pakets, setPakets] = React.useState<Paket[]>([]);
@@ -209,7 +213,7 @@ export default function ManagePaket() {
     price: '',
     price_psb: '',
     ppn: 11,
-    is_show: true
+    is_show: true,
   });
   const [selectedKategoris, setSelectedKategoris] = React.useState<string[]>(
     []
@@ -270,8 +274,11 @@ export default function ManagePaket() {
   const fetchKategoris = React.useCallback(async () => {
     setLoadingKategoris(true);
     try {
-      const res = await api.get<ApiListResult<Kategori>>(`${process.env.NEXT_PUBLIC_API_URL}/categori/list`);
+      const res = await api.get<ApiListResult<Kategori>>(
+        `${process.env.NEXT_PUBLIC_API_URL}/categori/list`
+      );
       setKategoris(res.data.data);
+      console.log(res.data.data);
     } catch (error) {
       console.error('Error fetching kategoris:', error);
     } finally {
@@ -282,7 +289,9 @@ export default function ManagePaket() {
   const fetchPromos = React.useCallback(async () => {
     setLoadingPromos(true);
     try {
-      const res = await api.get<ApiListResult<Promo>>(`${process.env.NEXT_PUBLIC_API_URL}/promo/list`);
+      const res = await api.get<ApiListResult<Promo>>(
+        `${process.env.NEXT_PUBLIC_API_URL}/promo/list`
+      );
       setPromos(res.data.data);
     } catch (error) {
       console.error('Error fetching promos:', error);
@@ -335,7 +344,7 @@ export default function ManagePaket() {
         ppn: newPaket.ppn,
         category_ids: selectedKategoris,
         promo_ids: selectedPromos,
-        is_show: newPaket.is_show
+        is_show: newPaket.is_show,
       };
 
       const res = await api.post(
@@ -354,7 +363,7 @@ export default function ManagePaket() {
           price: '',
           price_psb: '',
           ppn: 11,
-          is_show: true
+          is_show: true,
         });
         setSelectedKategoris([]);
         setSelectedPromos([]);
@@ -417,7 +426,7 @@ export default function ManagePaket() {
           final_price: parseFloat(editingPaket.final_price.toString()),
           category_ids: editSelectedKategoris,
           promo_ids: editSelectedPromos,
-          is_show: editingPaket.is_show
+          is_show: editingPaket.is_show,
         };
 
         const res = await api.put(
@@ -557,118 +566,118 @@ export default function ManagePaket() {
 
   const editFormFields: FormField[] = editingPaket
     ? [
-      {
-        id: 'edit-nama_paket',
-        label: 'Nama Paket',
-        type: 'text',
-        value: editingPaket.nama,
-        onChange: (value) =>
-          setEditingPaket((prev) => (prev ? { ...prev, nama: value } : null)),
-        required: true,
-      },
-      {
-        id: 'edit-bandwith_paket',
-        label: 'Bandwidth',
-        type: 'number',
-        value: editingPaket.bandwith,
-        onChange: (value) =>
-          setEditingPaket((prev) =>
-            prev ? { ...prev, bandwith: value } : null
+        {
+          id: 'edit-nama_paket',
+          label: 'Nama Paket',
+          type: 'text',
+          value: editingPaket.nama,
+          onChange: (value) =>
+            setEditingPaket((prev) => (prev ? { ...prev, nama: value } : null)),
+          required: true,
+        },
+        {
+          id: 'edit-bandwith_paket',
+          label: 'Bandwidth',
+          type: 'number',
+          value: editingPaket.bandwith,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, bandwith: value } : null
+            ),
+          required: true,
+        },
+        {
+          id: 'edit-harga_paket',
+          label: 'Harga Paket',
+          type: 'text',
+          value: editingPaket.price,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, price: value } : null
+            ),
+          placeholder: '500000',
+          required: true,
+        },
+        {
+          id: 'edit-harga_psb',
+          label: 'Harga PSB',
+          type: 'text',
+          value: editingPaket.price_psb,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, price_psb: value } : null
+            ),
+          placeholder: '200000',
+          required: true,
+        },
+        {
+          id: 'edit-ppn',
+          label: 'PPN (%)',
+          type: 'number',
+          value: editingPaket.ppn,
+          onChange: (value) =>
+            setEditingPaket((prev) => (prev ? { ...prev, ppn: value } : null)),
+          placeholder: '11',
+          required: true,
+        },
+        {
+          id: 'edit-kategoris',
+          label: 'Kategori',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <MultiSelect
+                options={kategoris.map(
+                  (kategori): MultiSelectOption => ({
+                    value: kategori.id,
+                    label: kategori.nama,
+                  })
+                )}
+                value={editSelectedKategoris}
+                onChange={setEditSelectedKategoris}
+                placeholder="Pilih kategori..."
+                disabled={loadingKategoris}
+              />
+            </div>
           ),
-        required: true,
-      },
-      {
-        id: 'edit-harga_paket',
-        label: 'Harga Paket',
-        type: 'text',
-        value: editingPaket.price,
-        onChange: (value) =>
-          setEditingPaket((prev) =>
-            prev ? { ...prev, price: value } : null
+        },
+        {
+          id: 'edit-promos',
+          label: 'Promo',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <MultiSelect
+                options={promos.map(
+                  (promo): MultiSelectOption => ({
+                    value: promo.id,
+                    label: `${promo.nama} (${promo.diskon}%)`,
+                  })
+                )}
+                value={editSelectedPromos}
+                onChange={setEditSelectedPromos}
+                placeholder="Pilih promo..."
+                disabled={loadingPromos}
+              />
+            </div>
           ),
-        placeholder: '500000',
-        required: true,
-      },
-      {
-        id: 'edit-harga_psb',
-        label: 'Harga PSB',
-        type: 'text',
-        value: editingPaket.price_psb,
-        onChange: (value) =>
-          setEditingPaket((prev) =>
-            prev ? { ...prev, price_psb: value } : null
-          ),
-        placeholder: '200000',
-        required: true,
-      },
-      {
-        id: 'edit-ppn',
-        label: 'PPN (%)',
-        type: 'number',
-        value: editingPaket.ppn,
-        onChange: (value) =>
-          setEditingPaket((prev) => (prev ? { ...prev, ppn: value } : null)),
-        placeholder: '11',
-        required: true,
-      },
-      {
-        id: 'edit-kategoris',
-        label: 'Kategori',
-        type: 'custom',
-        customComponent: (
-          <div className="col-span-3">
-            <MultiSelect
-              options={kategoris.map(
-                (kategori): MultiSelectOption => ({
-                  value: kategori.id,
-                  label: kategori.nama,
-                })
-              )}
-              value={editSelectedKategoris}
-              onChange={setEditSelectedKategoris}
-              placeholder="Pilih kategori..."
-              disabled={loadingKategoris}
-            />
-          </div>
-        ),
-      },
-      {
-        id: 'edit-promos',
-        label: 'Promo',
-        type: 'custom',
-        customComponent: (
-          <div className="col-span-3">
-            <MultiSelect
-              options={promos.map(
-                (promo): MultiSelectOption => ({
-                  value: promo.id,
-                  label: `${promo.nama} (${promo.diskon}%)`,
-                })
-              )}
-              value={editSelectedPromos}
-              onChange={setEditSelectedPromos}
-              placeholder="Pilih promo..."
-              disabled={loadingPromos}
-            />
-          </div>
-        ),
-      },
-      {
-        id: 'edit-is_show',
-        label: 'Tampilkan',
-        type: 'select',
-        value: editingPaket.is_show,
-        onChange: (value) =>
-          setEditingPaket((prev) =>
-            prev ? { ...prev, is_show: value as boolean } : null
-          ),
-        options: [
-          { value: true, label: 'Tampilkan' },
-          { value: false, label: 'Sembunyikan' },
-        ],
-        required: true,
-      },
-    ]
+        },
+        {
+          id: 'edit-is_show',
+          label: 'Tampilkan',
+          type: 'select',
+          value: editingPaket.is_show,
+          onChange: (value) =>
+            setEditingPaket((prev) =>
+              prev ? { ...prev, is_show: value as boolean } : null
+            ),
+          options: [
+            { value: true, label: 'Tampilkan' },
+            { value: false, label: 'Sembunyikan' },
+          ],
+          required: true,
+        },
+      ]
     : [];
 
   const columns = React.useMemo(
@@ -715,7 +724,9 @@ export default function ManagePaket() {
                     onChange={(file) => setImportFile(file)}
                     accept=".xls,.xlsx,.csv"
                   />
-                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Format: .xls, .xlsx{' '}
+                  </div>
                 </div>
               ),
             } as FormField,

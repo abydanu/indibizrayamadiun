@@ -31,14 +31,14 @@ export const createColumns = (
 ): ColumnDef<AgencyDisplay>[] => [
   {
     id: 'select',
-    header: "#",
+    header: '#',
     cell: ({ row }) => row.index + 1,
     enableSorting: false,
     enableHiding: false,
   },
   {
     accessorKey: 'nama',
-    header: () => <span className="font-extrabold">Nama Agency</span>,
+    header: () => <span className="font-extrabold">Nama Agensi</span>,
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue('nama')}</div>
     ),
@@ -126,7 +126,7 @@ export default function ManageAgencyDisplay() {
       );
       if (res.ok) {
         await fetchAgency();
-        toast.success('Agency berhasil dihapus');
+        toast.success('Agensi berhasil dihapus');
       }
     } catch (error) {
       console.error('Error deleting Agency:', error);
@@ -149,11 +149,11 @@ export default function ManageAgencyDisplay() {
       );
       if (res.ok) {
         await fetchAgency();
-        toast.success('Agency berhasil ditambahkan');
+        toast.success('Data berhasil ditambahkan');
         setIsAddDialogOpen(false);
         setNewAgenc({ nama: '' });
       } else {
-        toast.error('Gagal menambahkan Agency');
+        toast.error('Gagal menambahkan Agensi');
       }
     } catch (error) {
       console.error('Error adding Agency:', error);
@@ -208,7 +208,7 @@ export default function ManageAgencyDisplay() {
       );
       if (res.ok) {
         await fetchAgency();
-        toast.success('Agency berhasil diperbarui');
+        toast.success('Nama Agensi berhasil diperbarui');
         setIsEditDialogOpen(false);
         setEditingAgenc(null);
       }
@@ -227,12 +227,12 @@ export default function ManageAgencyDisplay() {
   const addFormFields: FormField[] = [
     {
       id: 'nama_agency',
-      label: 'Nama Agency',
+      label: 'Nama Agensi',
       type: 'text',
       value: newAgenc.nama,
       onChange: (value) => setNewAgenc((prev) => ({ ...prev, nama: value })),
       required: true,
-      placeholder: 'Masukkan nama Agency',
+      placeholder: 'Masukkan nama Agensi',
     },
   ];
 
@@ -240,13 +240,13 @@ export default function ManageAgencyDisplay() {
     ? [
         {
           id: 'edit-nama_agency',
-          label: 'Nama Agency',
+          label: 'Nama Agensi',
           type: 'text',
           value: editingAgenc.nama,
           onChange: (value) =>
             setEditingAgenc((prev) => (prev ? { ...prev, nama: value } : null)),
           required: true,
-          placeholder: 'Masukkan nama Agency',
+          placeholder: 'Masukkan nama Agensi',
         },
       ]
     : [];
@@ -262,11 +262,11 @@ export default function ManageAgencyDisplay() {
 
   return (
     <>
-      <PageHeader title="Kelola Daftar Agency" />
+      <PageHeader title="Kelola Daftar Agensi" />
       <Main>
         <PageTitle
-          title="Kelola Daftar Agency"
-          description="Kelola Daftar Agency Telkom Madiun Raya"
+          title="Kelola Daftar Agensi"
+          description="Kelola Daftar Agensi Telkom Madiun Raya"
           showAddButton
           addButtonText="Tambah Data"
           showImportButton
@@ -282,14 +282,14 @@ export default function ManageAgencyDisplay() {
           description="Buat data baru. Isi informasi yang diperlukan."
           fields={addFormFields}
           onSubmit={handleAddAgency}
-          submitText="Tambah Agency"
+          submitText="Tambah Agensi"
           isSubmitting={isSubmitting}
         />
 
         <FormDialog
           open={isImportDialogOpen}
           onOpenChange={setIsImportDialogOpen}
-          title="Import Agency dari Excel"
+          title="Import Agensi dari Excel"
           description="Upload file Excel sesuai template yang disediakan."
           fields={[
             {
@@ -304,7 +304,9 @@ export default function ManageAgencyDisplay() {
                     onChange={(file) => setImportFile(file)}
                     accept=".xls,.xlsx,.csv"
                   />
-                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Format: .xls, .xlsx{' '}
+                  </div>
                 </div>
               ),
             } as FormField,
@@ -317,8 +319,8 @@ export default function ManageAgencyDisplay() {
         <FormDialog
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
-          title="Edit Agency"
-          description="Ubah informasi Agency. Klik simpan setelah selesai."
+          title="Edit Agensi"
+          description="Ubah informasi Agensi. Klik simpan setelah selesai."
           fields={editFormFields}
           onSubmit={handleSaveEdit}
           submitText="Simpan"
@@ -330,8 +332,8 @@ export default function ManageAgencyDisplay() {
           data={kategoris}
           loading={loading}
           searchKey="nama"
-          searchPlaceholder="Cari Agency..."
-          emptyMessage="Tidak ada data Agency."
+          searchPlaceholder="Cari Agensi..."
+          emptyMessage="Tidak ada data Agensi."
           loadingComponent={<TableSkeleton columns={agencSkeletonColumns} />}
           pagination={pagination}
           onPaginationChange={handlePaginationChange}

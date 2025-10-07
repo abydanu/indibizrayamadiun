@@ -16,14 +16,15 @@ import {
   type ScrollableSelectOption,
 } from '@/shared/components/forms';
 import { ColumnDef } from '@tanstack/react-table';
-import { Checkbox } from '@/shared/ui/checkbox';
 import { Badge } from '@/shared/ui/badge';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
-import type { Sales, Agency } from '../../types/sales';
+import type { Sales } from '../../types/sales';
+import type { AgencyDisplay } from '../../types/agency';
 import { ApiResult } from '../../types/api';
 import { getDisplayErrorMessage } from '@/utils/api-error';
 import CustomFileInput from '@/shared/components/custom/custom-file-input';
+import { STO } from '../../types/sto';
 import { Datel } from '../../types/datel';
 
 const salesSkeletonColumns = [
@@ -71,28 +72,35 @@ export const createColumns = (
   },
   {
     accessorKey: 'agency',
-    header: () => <span className="font-extrabold">Agency</span>,
+    header: () => <span className="font-extrabold">Agensi</span>,
     cell: ({ row }) => {
-      const agency = row.getValue('agency') as Agency;
+      const agency = row.getValue('agency') as AgencyDisplay;
       return <div>{agency?.nama || '-'}</div>;
     },
   },
   {
-    accessorKey: 'datel',
+    accessorKey: 'wilayah',
     header: () => <span className="font-extrabold">Datel</span>,
     cell: ({ row }) => {
-      const datel = row.getValue('datel') as Datel;
-      return <div>{datel?.nama || '-'}</div>;
+      const wilayah = row.getValue('wilayah') as Datel;
+      return <div>{wilayah?.nama || '-'}</div>;
     },
   },
   {
-    accessorKey: 'kat_umur_sa',
-    header: () => <span className="font-extrabold">Kat. Umur. SA</span>,
+    accessorKey: 'sto',
+    header: () => <span className="font-extrabold">STO</span>,
     cell: ({ row }) => {
-      const datel = row.getValue('kat_umur_sa') as Datel;
-      return <div>{row.getValue("kat_umur_sa")}</div>;
+      const sto = row.getValue('sto') as STO;
+      return <div>{sto?.abbreviation || '-'}</div>;
     },
   },
+  // {
+  //   accessorKey: 'kat_umur_sa',
+  //   header: () => <span className="font-extrabold">Kat. Umur. SA</span>,
+  //   cell: ({ row }) => {
+  //     return <div>{row.getValue('kat_umur_sa')}</div>;
+  //   },
+  // },
   {
     accessorKey: 'created_at',
     header: () => <span className="font-extrabold">Tanggal Registrasi</span>,
@@ -145,8 +153,11 @@ export default function ManageSales() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [agencies, setAgencies] = React.useState<Agency[]>([]);
+  const [agencies, setAgencies] = React.useState<AgencyDisplay[]>([]);
   const [datels, setDatels] = React.useState<Datel[]>([]);
+  const [sto, setSto] = React.useState<STO[]>([]);
+  const [filteredStoAdd, setFilteredStoAdd] = React.useState<STO[]>([]);
+  const [filteredStoEdit, setFilteredStoEdit] = React.useState<STO[]>([]);
   const [pagination, setPagination] = React.useState<ServerPaginationState>({
     page: 1,
     limit: 10,
@@ -154,14 +165,24 @@ export default function ManageSales() {
     totalPages: 0,
   });
   const [newSales, setNewSales] = React.useState<
-    Omit<Sales, 'id' | 'created_at' | 'updated_at' | 'agency' | 'datel'>
+    Omit<
+      Sales,
+      | 'id'
+      | 'created_at'
+      | 'updated_at'
+      | 'agency'
+      | 'datel'
+      | 'wilayah'
+      | 'sto'
+    >
   >({
     nama: '',
     kode_sales: '',
     email: '',
     status: 'ACTIVE',
     agency_id: '',
-    datel_id: '',
+    wilayah_id: '',
+    sto_id: '',
     kat_umur_sa: new Date().toISOString(),
   });
 
@@ -208,12 +229,22 @@ export default function ManageSales() {
   const fetchDatels = React.useCallback(async () => {
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah?limit=1000`
       );
-      const datelData = (res.data as any).data || [];
-      setDatels(datelData);
+      const data = (res.data as ApiResult<Datel>).result?.data || [];
+      setDatels(data);
     } catch (error) {
       console.error('Error fetching datels:', error);
+    }
+  }, []);
+
+  const fetchSto = React.useCallback(async () => {
+    try {
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/sto?limit=1000`);
+      const data = (res.data as ApiResult<STO>).result?.data || [];
+      setSto(data);
+    } catch (error) {
+      console.error('Error fetching sto:', error);
     }
   }, []);
 
@@ -223,6 +254,16 @@ export default function ManageSales() {
 
   const handleEditSales = (salesData: Sales) => {
     setEditingSales(salesData);
+    
+    if (salesData.wilayah_id) {
+      const selectedDatel = datels.find(d => d.id === salesData.wilayah_id);
+      if (selectedDatel && selectedDatel.stos) {
+        const stoIds = selectedDatel.stos.map(s => s.sto.id);
+        const filtered = sto.filter(s => stoIds.includes(s.id));
+        setFilteredStoEdit(filtered);
+      }
+    }
+    
     setIsEditDialogOpen(true);
   };
 
@@ -251,9 +292,11 @@ export default function ManageSales() {
   const handleAddSales = async () => {
     setIsSubmitting(true);
     try {
+      const payload = { ...newSales };
+
       const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_URL}/sales`,
-        newSales
+        payload
       );
       if (res.ok) {
         await fetchSales();
@@ -265,7 +308,8 @@ export default function ManageSales() {
           email: '',
           status: 'ACTIVE',
           agency_id: '',
-          datel_id: '',
+          wilayah_id: '',
+          sto_id: '',
           kat_umur_sa: new Date().toISOString(),
         });
       }
@@ -316,9 +360,11 @@ export default function ManageSales() {
 
     setIsSubmitting(true);
     try {
+      const payload = { ...editingSales };
+
       const res = await api.put(
         `${process.env.NEXT_PUBLIC_API_URL}/sales/${editingSales.id}`,
-        editingSales
+        payload
       );
       if (res.ok) {
         await fetchSales();
@@ -393,24 +439,53 @@ export default function ManageSales() {
     },
     {
       id: 'datel_id',
-      label: 'Datel',
+      label: 'Wilayah',
       type: 'custom',
       customComponent: (
         <div className="col-span-3">
           <ScrollableSelect
             options={datels.map(
-              (wilayah): ScrollableSelectOption => ({
-                value: wilayah,
-                label: wilayah,
+              (datel): ScrollableSelectOption => ({
+                value: datel.id,
+                label: datel.nama,
               })
             )}
-            value={newSales.datel_id}
+            value={newSales.wilayah_id}
+            onChange={(value) => {
+              setNewSales((prev) => ({ 
+                ...prev, 
+                wilayah_id: value,
+                sto_id: '' 
+              }));
+            }}
+            placeholder="Pilih wilayah..."
+            searchPlaceholder="Cari wilayah..."
+            emptyMessage="Tidak ada wilayah ditemukan."
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'sto_id',
+      label: 'STO',
+      type: 'custom',
+      customComponent: (
+        <div className="col-span-3">
+          <ScrollableSelect
+            options={filteredStoAdd.map(
+              (s): ScrollableSelectOption => ({
+                value: s.id,
+                label: `${s.name} (${s.abbreviation})`,
+              })
+            )}
+            value={newSales.sto_id}
             onChange={(value) =>
-              setNewSales((prev) => ({ ...prev, datel_id: value }))
+              setNewSales((prev) => ({ ...prev, sto_id: value }))
             }
-            placeholder="Pilih datel..."
-            searchPlaceholder="Cari datel..."
-            emptyMessage="Tidak ada datel ditemukan."
+            placeholder={!newSales.wilayah_id ? "Pilih wilayah terlebih dahulu..." : "Pilih STO..."}
+            searchPlaceholder="Cari STO..."
+            emptyMessage="Tidak ada STO untuk wilayah ini."
+            disabled={!newSales.wilayah_id}
           />
         </div>
       ),
@@ -497,26 +572,53 @@ export default function ManageSales() {
         },
         {
           id: 'edit-datel_id',
-          label: 'Datel',
+          label: 'Wilayah',
           type: 'custom',
           customComponent: (
             <div className="col-span-3">
               <ScrollableSelect
                 options={datels.map(
-                  (datel): ScrollableSelectOption => ({
-                    value: datel.id,
-                    label: datel.nama,
+                  (d): ScrollableSelectOption => ({
+                    value: d.id,
+                    label: d.nama,
                   })
                 )}
-                value={editingSales.datel_id}
+                value={editingSales.wilayah_id}
                 onChange={(value) =>
                   setEditingSales((prev) =>
-                    prev ? { ...prev, datel_id: value } : null
+                    prev ? { ...prev, wilayah_id: value, sto_id: '' } : null
                   )
                 }
-                placeholder="Pilih datel..."
-                searchPlaceholder="Cari datel..."
-                emptyMessage="Tidak ada datel ditemukan."
+                placeholder="Pilih wilayah..."
+                searchPlaceholder="Cari wilayah..."
+                emptyMessage="Tidak ada wilayah ditemukan."
+              />
+            </div>
+          ),
+        },
+        {
+          id: 'edit-sto_id',
+          label: 'STO',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <ScrollableSelect
+                options={filteredStoEdit.map(
+                  (s): ScrollableSelectOption => ({
+                    value: s.id,
+                    label: `${s.name} (${s.abbreviation})`,
+                  })
+                )}
+                value={editingSales.sto_id}
+                onChange={(value) =>
+                  setEditingSales((prev) =>
+                    prev ? { ...prev, sto_id: value } : null
+                  )
+                }
+                placeholder={!editingSales.wilayah_id ? "Pilih wilayah terlebih dahulu..." : "Pilih STO..."}
+                searchPlaceholder="Cari STO..."
+                emptyMessage="Tidak ada STO untuk wilayah ini."
+                disabled={!editingSales.wilayah_id}
               />
             </div>
           ),
@@ -544,10 +646,47 @@ export default function ManageSales() {
     [isSubmitting]
   );
 
+  // Filter STO based on selected wilayah for Add form
+  React.useEffect(() => {
+    if (newSales.wilayah_id) {
+      const selectedDatel = datels.find(d => d.id === newSales.wilayah_id);
+      if (selectedDatel && selectedDatel.stos) {
+        const stoIds = selectedDatel.stos.map(s => s.sto.id);
+        const filtered = sto.filter(s => stoIds.includes(s.id));
+        setFilteredStoAdd(filtered);
+      } else {
+        setFilteredStoAdd([]);
+      }
+    } else {
+      setFilteredStoAdd([]);
+      // Reset STO selection when wilayah is cleared
+      if (newSales.sto_id) {
+        setNewSales(prev => ({ ...prev, sto_id: '' }));
+      }
+    }
+  }, [newSales.wilayah_id, datels, sto]);
+
+  // Filter STO based on selected wilayah for Edit form
+  React.useEffect(() => {
+    if (editingSales?.wilayah_id) {
+      const selectedDatel = datels.find(d => d.id === editingSales.wilayah_id);
+      if (selectedDatel && selectedDatel.stos) {
+        const stoIds = selectedDatel.stos.map(s => s.sto.id);
+        const filtered = sto.filter(s => stoIds.includes(s.id));
+        setFilteredStoEdit(filtered);
+      } else {
+        setFilteredStoEdit([]);
+      }
+    } else {
+      setFilteredStoEdit([]);
+    }
+  }, [editingSales?.wilayah_id, datels, sto]);
+
   React.useEffect(() => {
     fetchSales();
     fetchAgencies();
     fetchDatels();
+    fetchSto();
   }, []);
 
   return (
@@ -584,7 +723,7 @@ export default function ManageSales() {
                     accept=".xls,.xlsx,.csv"
                   />
                   <div className="text-xs text-gray-500 mt-2">
-                    Format: .xls, .xlsx, .csv
+                    Format: .xls, .xlsx
                   </div>
                 </div>
               ),
@@ -597,7 +736,13 @@ export default function ManageSales() {
 
         <FormDialog
           open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              // Reset filtered STO when dialog closes
+              setFilteredStoAdd([]);
+            }
+          }}
           title="Tambah Sales Baru"
           description="Buat data sales baru. Isi semua informasi yang diperlukan."
           fields={addFormFields}
@@ -608,7 +753,14 @@ export default function ManageSales() {
 
         <FormDialog
           open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
+          onOpenChange={(open) => {
+            setIsEditDialogOpen(open);
+            if (!open) {
+              // Reset filtered STO when dialog closes
+              setFilteredStoEdit([]);
+              setEditingSales(null);
+            }
+          }}
           title="Edit Sales"
           description="Ubah informasi sales. Klik simpan setelah selesai."
           fields={editFormFields}

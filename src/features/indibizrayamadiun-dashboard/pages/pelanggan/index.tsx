@@ -902,11 +902,10 @@ export default function ManageRegistrasi() {
           showImportButton
           showExportButton
           importButtonText="Import Data"
-          exportButtonText='Export Data'
+          exportButtonText="Export Data"
           onImportClick={() => setIsImportDialogOpen(true)}
           onExportClick={exportToExcel}
-        >
-        </PageTitle>
+        ></PageTitle>
 
         <FormDialog
           open={isImportDialogOpen}
@@ -927,7 +926,7 @@ export default function ManageRegistrasi() {
                     accept=".xls,.xlsx,.csv"
                   />
                   <div className="text-xs text-gray-500 mt-2">
-                    Format: .xls, .xlsx, .csv
+                    Format: .xls, .xlsx
                   </div>
                 </div>
               ),

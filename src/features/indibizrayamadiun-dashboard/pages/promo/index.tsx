@@ -38,107 +38,109 @@ export const createColumns = (
   handleDeletePromo: (promoId: string) => void,
   isSubmitting: boolean
 ): ColumnDef<Promo>[] => [
-    {
-      id: 'select',
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      enableSorting: false,
-      enableHiding: false,
+  {
+    id: 'select',
+    header: '#',
+    cell: ({ row }) => row.index + 1,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'nama',
+    header: () => <span className="font-extrabold">Nama Promo</span>,
+    cell: ({ row }) => {
+      const value = row.getValue('nama') as string;
+      const formatted = value.replace(/_/g, ' ');
+      return <div className="font-medium">{formatted}</div>;
     },
-    {
-      accessorKey: 'nama',
-      header: () => <span className="font-extrabold">Nama Promo</span>,
-      cell: ({ row }) => {
-        const value = row.getValue('nama') as string;
-        const formatted = value.replace(/_/g, ' ');
-        return <div className="font-medium">{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: 'deskripsi',
-      header: () => <span className="font-extrabold">Deskripsi</span>,
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue('deskripsi')}</div>
-      ),
-    },
-    {
-      accessorKey: 'jenis',
-      header: () => <span className="font-extrabold">Jenis</span>,
-      cell: ({ row }) => {
-        const jenis = row.getValue('jenis') as string;
-        return (
-          <Badge
-            variant="outline"
-            className={`capitalize font-medium ${jenis === 'DISKON'
+  },
+  {
+    accessorKey: 'deskripsi',
+    header: () => <span className="font-extrabold">Deskripsi</span>,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue('deskripsi')}</div>
+    ),
+  },
+  {
+    accessorKey: 'jenis',
+    header: () => <span className="font-extrabold">Jenis</span>,
+    cell: ({ row }) => {
+      const jenis = row.getValue('jenis') as string;
+      return (
+        <Badge
+          variant="outline"
+          className={`capitalize font-medium ${
+            jenis === 'DISKON'
               ? 'text-blue-700 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:bg-blue-950/50'
               : jenis === 'CASHBACK'
-                ? 'text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50'
-                : 'text-purple-700 border-purple-200 bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:bg-purple-950/50'
-              }`}
-          >
-            {jenis}
-          </Badge>
-        );
-      },
+              ? 'text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50'
+              : 'text-purple-700 border-purple-200 bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:bg-purple-950/50'
+          }`}
+        >
+          {jenis}
+        </Badge>
+      );
     },
-    {
-      accessorKey: 'diskon',
-      header: () => <span className="font-extrabold">Nilai</span>,
-      cell: ({ row }) => {
-        const nilai = parseFloat(row.getValue('diskon'));
-        return <div className="font-medium">{nilai}%</div>;
-      },
+  },
+  {
+    accessorKey: 'diskon',
+    header: () => <span className="font-extrabold">Nilai</span>,
+    cell: ({ row }) => {
+      const nilai = parseFloat(row.getValue('diskon'));
+      return <div className="font-medium">{nilai}%</div>;
     },
-    {
-      accessorKey: 'mulai',
-      header: () => <span className="font-extrabold">Tanggal Mulai</span>,
-      cell: ({ row }) => {
-        const date = new Date(row.getValue('mulai'));
-        return <div>{date.toLocaleDateString('id-ID')}</div>;
-      },
+  },
+  {
+    accessorKey: 'mulai',
+    header: () => <span className="font-extrabold">Tanggal Mulai</span>,
+    cell: ({ row }) => {
+      const date = new Date(row.getValue('mulai'));
+      return <div>{date.toLocaleDateString('id-ID')}</div>;
     },
-    {
-      accessorKey: 'akhir',
-      header: () => <span className="font-extrabold">Tanggal Berakhir</span>,
-      cell: ({ row }) => {
-        const date = new Date(row.getValue('akhir'));
-        return <div>{date.toLocaleDateString('id-ID')}</div>;
-      },
+  },
+  {
+    accessorKey: 'akhir',
+    header: () => <span className="font-extrabold">Tanggal Berakhir</span>,
+    cell: ({ row }) => {
+      const date = new Date(row.getValue('akhir'));
+      return <div>{date.toLocaleDateString('id-ID')}</div>;
     },
-    {
-      accessorKey: 'is_global',
-      header: () => <span className="font-extrabold">Global</span>,
-      cell: ({ row }) => {
-        const isGlobal = row.getValue('is_global') as boolean;
-        return (
-          <Badge
-            variant="outline"
-            className={`capitalize font-medium ${isGlobal
+  },
+  {
+    accessorKey: 'is_global',
+    header: () => <span className="font-extrabold">Global</span>,
+    cell: ({ row }) => {
+      const isGlobal = row.getValue('is_global') as boolean;
+      return (
+        <Badge
+          variant="outline"
+          className={`capitalize font-medium ${
+            isGlobal
               ? 'text-green-700 border-green-200 bg-green-50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50'
               : 'text-gray-700 border-gray-200 bg-gray-50 dark:text-gray-400 dark:border-gray-800 dark:bg-gray-950/50'
-              }`}
-          >
-            {isGlobal ? 'Ya' : 'Tidak'}
-          </Badge>
-        );
-      },
+          }`}
+        >
+          {isGlobal ? 'Ya' : 'Tidak'}
+        </Badge>
+      );
     },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const promo = row.original;
-        return (
-          <ActionDropdown
-            onEdit={() => handleEditPromo(promo)}
-            onDelete={() => handleDeletePromo(promo.id)}
-            itemName={promo.nama}
-            isSubmitting={isSubmitting}
-          />
-        );
-      },
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const promo = row.original;
+      return (
+        <ActionDropdown
+          onEdit={() => handleEditPromo(promo)}
+          onDelete={() => handleDeletePromo(promo.id)}
+          itemName={promo.nama}
+          isSubmitting={isSubmitting}
+        />
+      );
     },
-  ];
+  },
+];
 
 export default function ManagePromo() {
   const [promos, setPromos] = React.useState<Promo[]>([]);
@@ -187,7 +189,9 @@ export default function ManagePromo() {
       try {
         const currentPage = page || pagination.page;
         const currentLimit = limit || pagination.limit;
-        const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/promo?page=${currentPage}&limit=${currentLimit}`);
+        const res = await api.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/promo?page=${currentPage}&limit=${currentLimit}`
+        );
         const data = (res.data as ApiResult<Promo>).result;
         setPromos(data.data);
         setPagination({
@@ -453,103 +457,103 @@ export default function ManagePromo() {
 
   const editFormFields: FormField[] = editingPromo
     ? [
-      {
-        id: 'edit-namaPromo',
-        label: 'Promo',
-        type: 'text',
-        value: editingPromo.nama,
-        onChange: (value) =>
-          setEditingPromo((prev) => (prev ? { ...prev, nama: value } : null)),
-        required: true,
-      },
-      {
-        id: 'edit-jenis',
-        label: 'Jenis',
-        type: 'select',
-        value: editingPromo.jenis,
-        onChange: (value) =>
-          setEditingPromo((prev) =>
-            prev ? { ...prev, jenis: value } : null
+        {
+          id: 'edit-namaPromo',
+          label: 'Promo',
+          type: 'text',
+          value: editingPromo.nama,
+          onChange: (value) =>
+            setEditingPromo((prev) => (prev ? { ...prev, nama: value } : null)),
+          required: true,
+        },
+        {
+          id: 'edit-jenis',
+          label: 'Jenis',
+          type: 'select',
+          value: editingPromo.jenis,
+          onChange: (value) =>
+            setEditingPromo((prev) =>
+              prev ? { ...prev, jenis: value } : null
+            ),
+          options: [
+            { value: 'DISKON', label: 'Diskon' },
+            { value: 'CASHBACK', label: 'Cashback' },
+            { value: 'BONUS', label: 'Bonus' },
+            { value: 'DLL', label: 'Dll' },
+          ],
+          required: true,
+        },
+        {
+          id: 'edit-nilai',
+          label: 'Diskon (%)',
+          type: 'number',
+          value:
+            typeof editingPromo.diskon === 'string'
+              ? editingPromo.diskon
+              : editingPromo.diskon.toString(),
+          onChange: (value) =>
+            setEditingPromo((prev) =>
+              prev ? { ...prev, diskon: value } : null
+            ),
+          min: 0,
+          max: 100,
+          step: 0.01,
+          required: true,
+        },
+        {
+          id: 'edit-deskripsi',
+          label: 'Deskripsi',
+          type: 'text',
+          value: editingPromo.deskripsi,
+          onChange: (value) =>
+            setEditingPromo((prev) =>
+              prev ? { ...prev, deskripsi: value } : null
+            ),
+          required: true,
+        },
+        {
+          id: 'edit-mulai',
+          label: 'Mulai',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <DatePicker
+                date={editStartDate}
+                onSelect={setEditStartDate}
+                placeholder="Pilih tanggal mulai"
+              />
+            </div>
           ),
-        options: [
-          { value: 'DISKON', label: 'Diskon' },
-          { value: 'CASHBACK', label: 'Cashback' },
-          { value: 'BONUS', label: 'Bonus' },
-          { value: 'DLL', label: 'Dll' },
-        ],
-        required: true,
-      },
-      {
-        id: 'edit-nilai',
-        label: 'Diskon (%)',
-        type: 'number',
-        value:
-          typeof editingPromo.diskon === 'string'
-            ? editingPromo.diskon
-            : editingPromo.diskon.toString(),
-        onChange: (value) =>
-          setEditingPromo((prev) =>
-            prev ? { ...prev, diskon: value } : null
+        },
+        {
+          id: 'edit-berakhir',
+          label: 'Berakhir',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <DatePicker
+                date={editEndDate}
+                onSelect={setEditEndDate}
+                placeholder="Pilih tanggal berakhir"
+              />
+            </div>
           ),
-        min: 0,
-        max: 100,
-        step: 0.01,
-        required: true,
-      },
-      {
-        id: 'edit-deskripsi',
-        label: 'Deskripsi',
-        type: 'text',
-        value: editingPromo.deskripsi,
-        onChange: (value) =>
-          setEditingPromo((prev) =>
-            prev ? { ...prev, deskripsi: value } : null
-          ),
-        required: true,
-      },
-      {
-        id: 'edit-mulai',
-        label: 'Mulai',
-        type: 'custom',
-        customComponent: (
-          <div className="col-span-3">
-            <DatePicker
-              date={editStartDate}
-              onSelect={setEditStartDate}
-              placeholder="Pilih tanggal mulai"
-            />
-          </div>
-        ),
-      },
-      {
-        id: 'edit-berakhir',
-        label: 'Berakhir',
-        type: 'custom',
-        customComponent: (
-          <div className="col-span-3">
-            <DatePicker
-              date={editEndDate}
-              onSelect={setEditEndDate}
-              placeholder="Pilih tanggal berakhir"
-            />
-          </div>
-        ),
-      },
-      {
-        id: 'edit-isGlobal',
-        label: 'Global',
-        type: 'select',
-        value: String(editingPromo.is_global),
-        onChange: (value) =>
-          setEditingPromo((prev) =>
-            prev ? { ...prev, is_global: value === 'true' } : null
-          ),
-        options: [
-          { value: 'true', label: 'Ya' },
-          { value: 'false', label: 'Tidak' },
-        ],
-      },
-    ]
+        },
+        {
+          id: 'edit-isGlobal',
+          label: 'Global',
+          type: 'select',
+          value: String(editingPromo.is_global),
+          onChange: (value) =>
+            setEditingPromo((prev) =>
+              prev ? { ...prev, is_global: value === 'true' } : null
+            ),
+          options: [
+            { value: 'true', label: 'Ya' },
+            { value: 'false', label: 'Tidak' },
+          ],
+        },
+      ]
     : [];
 
   const columns = React.useMemo(
@@ -594,7 +598,9 @@ export default function ManagePromo() {
                     onChange={(file) => setImportFile(file)}
                     accept=".xls,.xlsx,.csv"
                   />
-                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Format: .xls, .xlsx{' '}
+                  </div>
                 </div>
               ),
             } as FormField,

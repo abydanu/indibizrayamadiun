@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/shared/ui/button"
 import {
@@ -16,17 +16,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/ui/popover"
+import { Badge } from "@/shared/ui/badge"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 
-export interface ScrollableSelectOption {
-  value: any
-  label: any
+export interface MultiScrollableSelectOption {
+  value: string
+  label: string
 }
 
-interface ScrollableSelectProps {
-  options: ScrollableSelectOption[]
-  value: string
-  onChange: (value: string) => void
+interface MultiScrollableSelectProps {
+  options: MultiScrollableSelectOption[]
+  value: string[]
+  onChange: (value: string[]) => void
   placeholder?: string
   className?: string
   disabled?: boolean
@@ -34,20 +35,30 @@ interface ScrollableSelectProps {
   emptyMessage?: string
 }
 
-export function ScrollableSelect({
+export function MultiScrollableSelect({
   options,
   value,
   onChange,
-  placeholder = "Select an option...",
+  placeholder = "Select items...",
   className,
   disabled = false,
   searchPlaceholder = "Search...",
   emptyMessage = "No options found.",
-}: ScrollableSelectProps) {
+}: MultiScrollableSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
 
-  const selectedOption = options.find((option) => option.value === value)
+  const handleSelect = (selectedValue: string) => {
+    if (value.includes(selectedValue)) {
+      onChange(value.filter((item) => item !== selectedValue))
+    } else {
+      onChange([...value, selectedValue])
+    }
+  }
+
+  const handleRemove = (valueToRemove: string) => {
+    onChange(value.filter((item) => item !== valueToRemove))
+  }
 
   // Filter options based on search value for better performance
   const filteredOptions = React.useMemo(() => {
@@ -57,6 +68,8 @@ export function ScrollableSelect({
     )
   }, [options, searchValue])
 
+  const selectedOptions = options.filter((option) => value.includes(option.value))
+
   // Reset search when popover closes
   React.useEffect(() => {
     if (!open) {
@@ -65,7 +78,7 @@ export function ScrollableSelect({
   }, [open])
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("space-y-2", className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -75,10 +88,10 @@ export function ScrollableSelect({
             className="w-full justify-between"
             disabled={disabled}
           >
-            {selectedOption ? (
-              <span className="truncate">{selectedOption.label}</span>
-            ) : (
+            {value.length === 0 ? (
               <span className="text-muted-foreground">{placeholder}</span>
+            ) : (
+              <span>{value.length} item(s) selected</span>
             )}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -97,15 +110,12 @@ export function ScrollableSelect({
                   <CommandItem
                     key={option.value}
                     value={option.label}
-                    onSelect={() => {
-                      onChange(option.value === value ? "" : option.value)
-                      setOpen(false)
-                    }}
+                    onSelect={() => handleSelect(option.value)}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value === option.value ? "opacity-100" : "opacity-0"
+                        value.includes(option.value) ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <span className="truncate">{option.label}</span>
@@ -116,6 +126,35 @@ export function ScrollableSelect({
           </Command>
         </PopoverContent>
       </Popover>
+      
+      {selectedOptions.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {selectedOptions.map((option) => (
+            <Badge
+              key={option.value}
+              variant="secondary"
+              className="text-xs"
+            >
+              {option.label}
+              <button
+                className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleRemove(option.value)
+                  }
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
+                onClick={() => handleRemove(option.value)}
+              >
+                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

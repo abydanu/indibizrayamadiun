@@ -50,16 +50,13 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
   hasKodeSales,
   handleSalesSelection,
 }) => {
-  // Find selected paket for detail display
   const selectedPaket = pakets.find(paket => paket.id === value);
 
-  // Truncate function for customizable text length
   const truncateText = (text: string, maxLength: number = 30) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
-
-  // Format paket display with truncation
+  
   const formatPaketDisplay = (paket: any, maxNameLength: number = 25, maxPromoLength: number = 20) => {
     const truncatedName = truncateText(paket.nama, maxNameLength);
     const promoText = paket.applied_promos?.length 
@@ -100,7 +97,7 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
                     className="w-full justify-between bg-transparent"
                   >
                     {value && selectedPaket
-                      ? formatPaketDisplay(selectedPaket, 20, 15) // Shorter for button display
+                      ? formatPaketDisplay(selectedPaket, 20, 15)
                       : 'Pilih Paket'}
                     <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -133,7 +130,7 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
                             />
                             <div className="flex flex-col">
                               <span className="font-medium">
-                                {formatPaketDisplay(paket, 30, 25)} {/* Longer for dropdown options */}
+                                {formatPaketDisplay(paket, 30, 25)}
                               </span>
                               <span className="text-sm text-gray-500">
                                 /bulan
@@ -157,7 +154,7 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
 
           <div className="grid gap-2">
             <Label htmlFor="nama_sales">
-              NAMA SALES (WAJIB NAMA LENGKAP)
+              NAMA SALES
               <span className="text-red-500">*</span>
             </Label>
             <input
@@ -209,6 +206,9 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
                               <span className="font-medium">{salesItem.nama}</span>
                               <span className="text-sm text-muted-foreground">
                                 {salesItem.kode_sales || 'Tidak ada kode'} - {salesItem.agency?.nama || 'No Agency'}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {salesItem.wilayah?.nama || '-'} - {salesItem.sto?.abbreviation || '-'}
                               </span>
                             </div>
                           </CommandItem>

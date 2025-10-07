@@ -10,7 +10,7 @@ import { ScrollableSelect, type ScrollableSelectOption } from '@/shared/componen
 import CustomFileInput from '@/shared/components/custom/custom-file-input';
 import LocationPicker from '@/shared/components/custom/location-picker';
 import { SmartFormData } from '../../hooks/use-smart-form';
-import type { Datel } from '@/features/indibizrayamadiun-dashboard/types/datel';
+import { Datel } from '@/features/indibizrayamadiun-dashboard/types/datel';
 
 interface Step1InformasiUsahaProps {
   form: UseFormReturn<SmartFormData>;
@@ -79,9 +79,9 @@ const Step1InformasiUsaha: React.FC<Step1InformasiUsahaProps> = ({
               })}
             />
             <ScrollableSelect
-              options={datels.map((wilayah): ScrollableSelectOption => ({
-                value: wilayah,
-                label: wilayah,
+              options={datels.map((datel): ScrollableSelectOption => ({
+                value: datel.id,
+                label: datel.nama,
               }))}
               value={form.watch('datel_pemesanan') || ''}
               onChange={(value) => {

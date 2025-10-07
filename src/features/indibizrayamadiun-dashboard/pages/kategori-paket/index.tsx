@@ -29,36 +29,36 @@ export const createColumns = (
   handleDeleteKategori: (kategoriId: string) => void,
   isSubmitting: boolean
 ): ColumnDef<KategoriPaket>[] => [
-    {
-      id: 'select',
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      enableSorting: false,
-      enableHiding: false,
+  {
+    id: 'select',
+    header: '#',
+    cell: ({ row }) => row.index + 1,
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'nama',
+    header: () => <span className="font-extrabold">Nama Kategori</span>,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue('nama')}</div>
+    ),
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const kategori = row.original;
+      return (
+        <ActionDropdown
+          onEdit={() => handleEditKategori(kategori)}
+          onDelete={() => handleDeleteKategori(kategori.id)}
+          itemName={kategori.nama}
+          isSubmitting={isSubmitting}
+        />
+      );
     },
-    {
-      accessorKey: 'nama',
-      header: () => <span className="font-extrabold">Nama Kategori</span>,
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue('nama')}</div>
-      ),
-    },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const kategori = row.original;
-        return (
-          <ActionDropdown
-            onEdit={() => handleEditKategori(kategori)}
-            onDelete={() => handleDeleteKategori(kategori.id)}
-            itemName={kategori.nama}
-            isSubmitting={isSubmitting}
-          />
-        );
-      },
-    },
-  ];
+  },
+];
 
 export default function ManageKategoriPaket() {
   const [kategoris, setKategoris] = React.useState<KategoriPaket[]>([]);
@@ -238,19 +238,19 @@ export default function ManageKategoriPaket() {
 
   const editFormFields: FormField[] = editingKategori
     ? [
-      {
-        id: 'edit-nama_kategori',
-        label: 'Nama Kategori',
-        type: 'text',
-        value: editingKategori.nama,
-        onChange: (value) =>
-          setEditingKategori((prev) =>
-            prev ? { ...prev, nama: value } : null
-          ),
-        required: true,
-        placeholder: 'Masukkan nama kategori',
-      },
-    ]
+        {
+          id: 'edit-nama_kategori',
+          label: 'Nama Kategori',
+          type: 'text',
+          value: editingKategori.nama,
+          onChange: (value) =>
+            setEditingKategori((prev) =>
+              prev ? { ...prev, nama: value } : null
+            ),
+          required: true,
+          placeholder: 'Masukkan nama kategori',
+        },
+      ]
     : [];
 
   const columns = React.useMemo(
@@ -295,7 +295,9 @@ export default function ManageKategoriPaket() {
                     onChange={(file) => setImportFile(file)}
                     accept=".xls,.xlsx,.csv"
                   />
-                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx, .csv</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Format: .xls, .xlsx{' '}
+                  </div>
                 </div>
               ),
             } as FormField,

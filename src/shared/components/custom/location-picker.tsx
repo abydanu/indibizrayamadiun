@@ -147,7 +147,6 @@ const LocationPicker = ({
     });
   }, []);
 
-  // Function to update map and marker with coordinates
   const updateMapWithCoordinates = useCallback(async (lat: number, lng: number, popupText: string) => {
     if (!map) return;
 
@@ -916,21 +915,6 @@ const LocationPicker = ({
                 className="w-full h-full"
                 style={{ minHeight: '300px' }}
               />
-
-              {/* Search Guide */}
-              {leafletLoaded && !isMapLoading && (
-                <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border p-3 rounded-lg shadow-lg max-w-xs">
-                  <p className="text-sm text-foreground">
-                    <strong>🗺️ Panduan Pencarian:</strong><br />
-                    • Ketik nama kota, jalan, atau tempat<br />
-                    • Contoh: "Surabaya", "Malang", "Jl. Tunjungan"<br />
-                    • Atau koordinat: "-7.2575, 112.7521"<br />
-                    • Klik peta atau gunakan GPS<br />
-                    • Fokus area: Jawa Timur & Indonesia<br />
-                    • 🚀 <strong>Tips:</strong> Hasil di-cache & riwayat tersimpan untuk kecepatan
-                  </p>
-                </div>
-              )}
             </div>
 
             <div className="p-4 border-t flex justify-between flex-shrink-0">

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "dev-https": "next dev --experimental-https",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@faker-js/faker": "^10.0.0",

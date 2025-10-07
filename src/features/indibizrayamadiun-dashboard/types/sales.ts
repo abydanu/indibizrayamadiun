@@ -1,20 +1,6 @@
-export interface Agency {
-  id: string
-  nama: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Datel {
-  id: string
-  kode_sto: string
-  nama: string
-  categori: string
-  wilayah: string
-  sub_area: string
-  created_at: string
-  updated_at: string
-}
+import type { AgencyDisplay } from "./agency"
+import type { Datel } from "./datel"
+import type { STO } from "./sto"
 
 export interface Sales {
   id: string
@@ -23,10 +9,12 @@ export interface Sales {
   email: string
   status: "ACTIVE" | "DELETED"
   agency_id: string
-  datel_id: string
+  wilayah_id: string
+  sto_id: string
   kat_umur_sa: string
   created_at: string
   updated_at: string
-  agency: Agency
-  datel: Datel
+  agency: AgencyDisplay
+  wilayah: Datel
+  sto: STO
 }

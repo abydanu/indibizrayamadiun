@@ -23,7 +23,7 @@ const breadcrumbMap: Record<string, string> = {
   'kategori-paket': 'Kategori Paket',
   promo: 'Promo',
   datel: 'Datel',
-  agency: 'Agency',
+  agency: 'Agensi',
   sales: 'Sales',
   pelanggan: 'Pelanggan',
   sto: 'STO'
