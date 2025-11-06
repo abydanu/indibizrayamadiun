@@ -83,7 +83,7 @@ export default function ManageProdigi() {
   const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
   const [newProdigi, setNewProdigi] = React.useState<Omit<Prodigi, 'id' | 'created_at' | 'updated_at' | 'paket_id'>>({
     nama: '',
-    harga: 0,
+    harga: '',
     aktif: true,
   });
   const [pagination, setPagination] = React.useState<ServerPaginationState>({
