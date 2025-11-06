@@ -20,13 +20,13 @@ interface BreadcrumbItemType {
 const breadcrumbMap: Record<string, string> = {
   dashboard: 'Dasbor',
   paket: 'Paket',
-  'kategori-paket': 'Kategori Paket',
   promo: 'Promo',
   datel: 'Datel',
   agency: 'Agensi',
   sales: 'Sales',
   pelanggan: 'Pelanggan',
-  sto: 'STO'
+  sto: 'STO',
+  prodigi: 'Prodigi',
 }
 
 export function PageBreadcrumb() {

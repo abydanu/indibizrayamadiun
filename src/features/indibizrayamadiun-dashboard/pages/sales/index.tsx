@@ -26,6 +26,20 @@ import { getDisplayErrorMessage } from '@/utils/api-error';
 import CustomFileInput from '@/shared/components/custom/custom-file-input';
 import { STO } from '../../types/sto';
 import { Datel } from '../../types/datel';
+import { DatePicker } from '@/shared/components/date-picker';
+
+
+// Parse API date string into a local Date without timezone shift
+const parseApiDateToLocal = (value?: string): Date | undefined => {
+  if (!value) return undefined;
+  const dateOnlyMatch = value.match(/^\d{4}-\d{2}-\d{2}$/);
+  if (dateOnlyMatch) {
+    const [y, m, d] = value.split('-').map(Number);
+    return new Date(y, (m as number) - 1, d as number);
+  }
+  const parsed = new Date(value);
+  return isNaN(parsed.getTime()) ? undefined : parsed;
+};
 
 const salesSkeletonColumns = [
   { width: 'w-4', height: 'h-4' },
@@ -94,19 +108,13 @@ export const createColumns = (
       return <div>{sto?.abbreviation || '-'}</div>;
     },
   },
-  // {
-  //   accessorKey: 'kat_umur_sa',
-  //   header: () => <span className="font-extrabold">Kat. Umur. SA</span>,
-  //   cell: ({ row }) => {
-  //     return <div>{row.getValue('kat_umur_sa')}</div>;
-  //   },
-  // },
   {
-    accessorKey: 'created_at',
+    accessorKey: 'tgl_reg',
     header: () => <span className="font-extrabold">Tanggal Registrasi</span>,
     cell: ({ row }) => {
-      const date = new Date(row.getValue('created_at'));
-      return <div>{date.toLocaleDateString('id-ID')}</div>;
+      const raw = row.getValue('tgl_reg') as string;
+      const date = parseApiDateToLocal(raw);
+      return <div>{date ? date.toLocaleDateString('id-ID') : '-'}</div>;
     },
   },
   {
@@ -158,32 +166,38 @@ export default function ManageSales() {
   const [sto, setSto] = React.useState<STO[]>([]);
   const [filteredStoAdd, setFilteredStoAdd] = React.useState<STO[]>([]);
   const [filteredStoEdit, setFilteredStoEdit] = React.useState<STO[]>([]);
+  const [regDate, setRegDate] = React.useState<Date | undefined>(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  });
+  const [editRegDate, setEditRegDate] = React.useState<Date | undefined>();
   const [pagination, setPagination] = React.useState<ServerPaginationState>({
     page: 1,
     limit: 10,
     total: 0,
     totalPages: 0,
   });
-  const [newSales, setNewSales] = React.useState<
-    Omit<
-      Sales,
-      | 'id'
-      | 'created_at'
-      | 'updated_at'
-      | 'agency'
-      | 'datel'
-      | 'wilayah'
-      | 'sto'
-    >
-  >({
-    nama: '',
-    kode_sales: '',
-    email: '',
-    status: 'ACTIVE',
-    agency_id: '',
-    wilayah_id: '',
-    sto_id: '',
-    kat_umur_sa: new Date().toISOString(),
+  
+  const toDateOnlyString = (inputDate: Date): string => {
+    const y = inputDate.getFullYear();
+    const m = String(inputDate.getMonth() + 1).padStart(2, '0');
+    const d = String(inputDate.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+  
+  const [newSales, setNewSales] = React.useState<Omit<Sales, | 'id' | 'created_at' | 'updated_at' | 'agency' | 'datel' | 'wilayah' | 'sto'>>(() => {
+    const today = new Date();
+    return {
+      nama: '',
+      kode_sales: '',
+      email: '',
+      status: 'ACTIVE',
+      agency_id: '',
+      wilayah_id: '',
+      sto_id: '',
+      kat_umur_sa: new Date().toISOString(),
+      tgl_reg: toDateOnlyString(today) 
+    };
   });
 
   const fetchSales = React.useCallback(
@@ -254,6 +268,7 @@ export default function ManageSales() {
 
   const handleEditSales = (salesData: Sales) => {
     setEditingSales(salesData);
+    setEditRegDate(parseApiDateToLocal(salesData.tgl_reg));
     
     if (salesData.wilayah_id) {
       const selectedDatel = datels.find(d => d.id === salesData.wilayah_id);
@@ -293,6 +308,10 @@ export default function ManageSales() {
     setIsSubmitting(true);
     try {
       const payload = { ...newSales };
+      
+      // Debug logging
+      console.log('Add Sales - Payload tgl_reg:', payload.tgl_reg);
+      console.log('Add Sales - regDate:', regDate);
 
       const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_URL}/sales`,
@@ -302,6 +321,11 @@ export default function ManageSales() {
         await fetchSales();
         toast.success('Sales berhasil ditambahkan');
         setIsAddDialogOpen(false);
+        
+        // Reset dengan tanggal hari ini (local, no timezone shift)
+        const today = new Date();
+        const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
         setNewSales({
           nama: '',
           kode_sales: '',
@@ -311,7 +335,10 @@ export default function ManageSales() {
           wilayah_id: '',
           sto_id: '',
           kat_umur_sa: new Date().toISOString(),
+          tgl_reg: toDateOnlyString(todayLocal)
         });
+        
+        setRegDate(todayLocal);
       }
     } catch (error) {
       console.error('Error adding sales:', error);
@@ -361,6 +388,10 @@ export default function ManageSales() {
     setIsSubmitting(true);
     try {
       const payload = { ...editingSales };
+      
+      // Debug logging
+      console.log('Edit Sales - Payload tgl_reg:', payload.tgl_reg);
+      console.log('Edit Sales - editRegDate:', editRegDate);
 
       const res = await api.put(
         `${process.env.NEXT_PUBLIC_API_URL}/sales/${editingSales.id}`,
@@ -371,6 +402,7 @@ export default function ManageSales() {
         toast.success('Sales berhasil diperbarui');
         setIsEditDialogOpen(false);
         setEditingSales(null);
+        setEditRegDate(undefined);
       }
     } catch (error) {
       console.error('Error updating sales:', error);
@@ -486,6 +518,26 @@ export default function ManageSales() {
             searchPlaceholder="Cari STO..."
             emptyMessage="Tidak ada STO untuk wilayah ini."
             disabled={!newSales.wilayah_id}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'tgl_reg',
+      label: 'Tanggal Registrasi',
+      type: 'custom',
+      customComponent: (
+        <div className="col-span-3">
+          <DatePicker
+            date={regDate}
+            onSelect={(date) => {
+              setRegDate(date);
+              setNewSales((prev) => ({
+                ...prev,
+                tgl_reg: date ? toDateOnlyString(date) : prev.tgl_reg,
+              }));
+            }}
+            placeholder="Pilih tanggal registrasi..."
           />
         </div>
       ),
@@ -624,6 +676,27 @@ export default function ManageSales() {
           ),
         },
         {
+          id: 'edit-tgl_reg',
+          label: 'Tanggal Registrasi',
+          type: 'custom',
+          customComponent: (
+            <div className="col-span-3">
+              <DatePicker
+                date={editRegDate}
+                onSelect={(date) => {
+                  setEditRegDate(date);
+                  setEditingSales((prev) =>
+                    prev
+                      ? { ...prev, tgl_reg: date ? toDateOnlyString(date) : prev.tgl_reg }
+                      : null
+                  );
+                }}
+                placeholder="Pilih tanggal registrasi..."
+              />
+            </div>
+          ),
+        },
+        {
           id: 'edit-status',
           label: 'Status',
           type: 'select',
@@ -646,7 +719,6 @@ export default function ManageSales() {
     [isSubmitting]
   );
 
-  // Filter STO based on selected wilayah for Add form
   React.useEffect(() => {
     if (newSales.wilayah_id) {
       const selectedDatel = datels.find(d => d.id === newSales.wilayah_id);
@@ -659,14 +731,12 @@ export default function ManageSales() {
       }
     } else {
       setFilteredStoAdd([]);
-      // Reset STO selection when wilayah is cleared
       if (newSales.sto_id) {
         setNewSales(prev => ({ ...prev, sto_id: '' }));
       }
     }
   }, [newSales.wilayah_id, datels, sto]);
 
-  // Filter STO based on selected wilayah for Edit form
   React.useEffect(() => {
     if (editingSales?.wilayah_id) {
       const selectedDatel = datels.find(d => d.id === editingSales.wilayah_id);
@@ -739,8 +809,11 @@ export default function ManageSales() {
           onOpenChange={(open) => {
             setIsAddDialogOpen(open);
             if (!open) {
-              // Reset filtered STO when dialog closes
               setFilteredStoAdd([]);
+              setRegDate(undefined);
+            } else {
+              const parsed = parseApiDateToLocal(newSales.tgl_reg);
+              setRegDate(parsed);
             }
           }}
           title="Tambah Sales Baru"
@@ -759,6 +832,7 @@ export default function ManageSales() {
               // Reset filtered STO when dialog closes
               setFilteredStoEdit([]);
               setEditingSales(null);
+              setEditRegDate(undefined);
             }
           }}
           title="Edit Sales"

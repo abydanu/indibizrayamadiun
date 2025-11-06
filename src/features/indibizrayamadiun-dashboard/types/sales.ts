@@ -12,6 +12,7 @@ export interface Sales {
   wilayah_id: string
   sto_id: string
   kat_umur_sa: string
+  tgl_reg: string
   created_at: string
   updated_at: string
   agency: AgencyDisplay

@@ -16,7 +16,7 @@ export type PelangganStatus =
 export interface Pelanggan {
 	id: string;
 	nama: string;
-	datel_id: string;
+	wilayah_id: string;
 	paket_id: string;
 	sales_id: string;
 	no_hp_1: string;

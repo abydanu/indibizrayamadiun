@@ -57,6 +57,10 @@ export function DatePicker({
           mode="single"
           selected={date}
           onSelect={handleSelect}
+          captionLayout="dropdown"
+          // from={new Date(2000, 0, 1)}
+          // to={new Date(2100, 11, 31)}
+          defaultMonth={date}
           initialFocus
         />
       </PopoverContent>

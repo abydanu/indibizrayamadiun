@@ -86,24 +86,43 @@ export function FormDialog({
         );
 
       case 'number':
+        // For decimal inputs (e.g., percent), keep number type. For integer currency-like inputs, use text with numeric sanitization.
+        if (field.step != null && field.step < 1) {
+          return (
+            <Input
+              id={field.id}
+              type="number"
+              value={field.value ?? ''}
+              onChange={(e) => {
+                const raw = e.target.value;
+                const normalized = raw.replace(/\./g, '').replace(/,/g, '.');
+                const parsed = parseFloat(normalized);
+                field.onChange?.(isNaN(parsed) ? '' : parsed);
+              }}
+              placeholder={field.placeholder}
+              disabled={field.disabled}
+              className={field.className || 'w-full'}
+              min={field.min}
+              max={field.max}
+              step={field.step}
+            />
+          );
+        }
         return (
           <Input
             id={field.id}
-            type="number"
-            value={field.value || ''}
-            onChange={(e) =>
-              field.onChange?.(
-                field.step
-                  ? parseFloat(e.target.value)
-                  : parseInt(e.target.value) || 0
-              )
-            }
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={field.value === 0 ? '0' : field.value ? String(field.value) : ''}
+            onChange={(e) => {
+              const raw = e.target.value;
+              const cleaned = raw.replace(/[^\d]/g, '');
+              field.onChange?.(cleaned === '' ? '' : parseInt(cleaned, 10));
+            }}
             placeholder={field.placeholder}
             disabled={field.disabled}
             className={field.className || 'w-full'}
-            min={field.min}
-            max={field.max}
-            step={field.step}
           />
         );
 

@@ -1,52 +1,40 @@
+import type { Promo } from './promo'
+import type { Prodigi } from './prodigi'
+
 export interface Kategori {
   id: string
   nama: string
 }
 
-export interface Promo {
+export interface PromoPaket {
   id: string
-  nama: string
-  deskripsi: string
-  jenis: "DISKON" | "CASHBACK" | "GRATIS" | "BUNDLE"
-  diskon: string
-  mulai: string
-  akhir: string
-  is_global: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface PaketCategory {
-  id: string
-  paket_id: string
-  kategori_id: string
-  created_at: string
-  kategori: Kategori
-}
-
-export interface PaketPromo {
-  id: string
-  paket_id: string
   promo_id: string
-  created_at: string
+  paket_id: string
+  harga_coret: number | null
+  diskon_persen?: string | null
+  diskon_nominal?: string | null
   promo: Promo
 }
 
 export interface Paket {
   id: string
+  kode?: string
   nama: string
-  bandwith: number
-  price: string
-  price_psb: string
-  ppn: number
-  final_price: string
+  kategori: string
+  ratio: string
+  jenis_paket: string
+  bandwidth: number
+  ont_type: string
+  harga: string
+  harga_psb: string
+  total?: string | null
+  aktif: boolean
   created_at: string
   updated_at: string
-  is_show: boolean
-  paket_categories: PaketCategory[]
-  paket_promos: PaketPromo[]
-  categories: Kategori[]
-  promos: Promo[]
-  applied_promos: Promo[]
-  promo_type: "specific" | "global" | "none"
+  prodigis: Prodigi[]
+  promo_pakets: PromoPaket[]
+  effective_harga?: number
+  effective_psb?: number
+  
+  // ?: string[]
 }

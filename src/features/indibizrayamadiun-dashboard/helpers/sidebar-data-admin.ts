@@ -6,7 +6,7 @@ import {
   Layers,
   BadgePercent,
   Blocks,
-  ChartBarStacked,
+  PackageOpen,
   SmartphoneNfc,
   User,
   Radar
@@ -61,9 +61,9 @@ export const sidebarData: SidebarData = {
               icon: Blocks,
             },
             {
-              title: 'Kategori Paket',
-              url: '/admin/kategori-paket',
-              icon: ChartBarStacked,
+              title: 'Produk Digital',
+              url: '/admin/prodigi',
+              icon: PackageOpen,
             },
             {
               title: 'Promo',

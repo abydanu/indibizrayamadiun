@@ -9,7 +9,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SmartFormData } from '../../hooks/use-smart-form';
-import type { Paket } from '@/features/indibizrayamadiun-dashboard/types/paket';
 import type { Sales } from '@/features/indibizrayamadiun-dashboard/types/sales';
 import { Skeleton } from '@/shared/ui/skeleton';
 
@@ -17,7 +16,7 @@ interface Step3PaketSalesProps {
   form: UseFormReturn<SmartFormData>;
   formData: SmartFormData;
   updateFormField: (field: keyof SmartFormData, value: any) => void;
-  pakets: Paket[];
+  pakets: any[];
   sales: Sales[];
   loadingPakets: boolean;
   loadingSales: boolean;
@@ -52,18 +51,7 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
 }) => {
   const selectedPaket = pakets.find(paket => paket.id === value);
 
-  const truncateText = (text: string, maxLength: number = 30) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-  
-  const formatPaketDisplay = (paket: any, maxNameLength: number = 25, maxPromoLength: number = 20) => {
-    const truncatedName = truncateText(paket.nama, maxNameLength);
-    const promoText = paket.applied_promos?.length 
-      ? ` + ${paket.applied_promos.map((p: any) => truncateText(p.nama, maxPromoLength)).join(', ')}`
-      : '';
-    return `[${paket.bandwith} Mbps] ${truncatedName}${promoText} (Rp ${Number(paket.final_price || paket.price)?.toLocaleString('id-ID')})`;
-  };
+  const getPaketLabel = (paket: any) => paket?.label_option || 'Paket';
 
   return (
     <Card className="shadow-lg rounded-2xl border">
@@ -97,7 +85,7 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
                     className="w-full justify-between bg-transparent"
                   >
                     {value && selectedPaket
-                      ? formatPaketDisplay(selectedPaket, 20, 15)
+                      ? getPaketLabel(selectedPaket)
                       : 'Pilih Paket'}
                     <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -130,10 +118,7 @@ const Step3PaketSales: React.FC<Step3PaketSalesProps> = ({
                             />
                             <div className="flex flex-col">
                               <span className="font-medium">
-                                {formatPaketDisplay(paket, 30, 25)}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                /bulan
+                                {getPaketLabel(paket)}
                               </span>
                             </div>
                           </CommandItem>

@@ -5,7 +5,7 @@ import { useSmartForm, SmartFormData } from '../hooks/use-smart-form';
 import { useSmartFormStore } from '../store/use-smart-form-store';
 import { toast } from 'sonner';
 import api from '@/lib/api/useFetch';
-import type { Paket } from '@/features/indibizrayamadiun-dashboard/types/paket';
+// import type { Paket } from '@/features/indibizrayamadiun-dashboard/types/paket';
 import type { Sales } from '@/features/indibizrayamadiun-dashboard/types/sales';
 import FormStepper from './steps/form-stepper';
 import FormNavigation from './steps/form-navigation';
@@ -18,7 +18,7 @@ const SmartForm = () => {
   const [tooltipFotoLokasi, setTooltipFotoLokasi] = useState(true);
   const [tooltipBuktiUsaha, setTooltipBuktiUsaha] = useState(true);
   const [datels, setDatels] = useState<Datel[]>([]);
-  const [pakets, setPakets] = useState<Paket[]>([]);
+  const [pakets, setPakets] = useState<any[]>([]);
   const [sales, setSales] = useState<Sales[]>([]);
   const [loadingDatels, setLoadingDatels] = useState(false);
   const [loadingPakets, setLoadingPakets] = useState(false);
@@ -67,12 +67,7 @@ const SmartForm = () => {
       const list = (res.data as any).data || [];
       const mapped = list.map((p: any) => ({
         id: p.id,
-        nama: p.nama,
-        bandwith: p.bandwith,
-        final_price: p.final_price,
-        applied_promos: Array.isArray(p.paket_promos)
-          ? p.paket_promos.map((pp: any) => ({ nama: pp?.promo?.nama }))
-          : [],
+        label_option: p.label_option,
       }));
       setPakets(mapped || []);
     } catch (error) {
@@ -209,6 +204,7 @@ const SmartForm = () => {
     setIsSubmitting(true);
     try {
       const finalData = { ...formData, ...data };
+      const formValues = form.getValues();
 
       const selectedSalesData = sales.find((s) => s.nama === selectedSales);
       if (!selectedSalesData) {
@@ -218,7 +214,7 @@ const SmartForm = () => {
 
       const submitData: any = {
         nama: finalData.nama_usaha,
-        datel_id: finalData.datel_pemesanan,
+        wilayah_id: finalData.datel_pemesanan,
         paket_id: finalData.paket_indibiz,
         sales_id: selectedSalesData.id,
         no_hp_1: finalData.hp1,
@@ -229,11 +225,12 @@ const SmartForm = () => {
         ttl_pic: finalData.ttl_pic,
         no_ktp: finalData.nomor_ktp,
         email: finalData.email || '',
-        foto_ktp: finalData.foto_ktp || null,
-        foto_selfie: finalData.foto_ktp_selfie || null,
-        foto_lokasi: finalData.foto_lokasi || null,
-        bukti_usaha: finalData.bukti_usaha || null,
-        bukti_niwp: finalData.bukti_nib_npwp || null,
+        // Always prefer react-hook-form's current values for files to avoid losing File objects via store persistence
+        foto_ktp: (formValues as any).foto_ktp ?? finalData.foto_ktp ?? null,
+        foto_selfie: (formValues as any).foto_ktp_selfie ?? finalData.foto_ktp_selfie ?? null,
+        foto_lokasi: (formValues as any).foto_lokasi ?? finalData.foto_lokasi ?? null,
+        bukti_usaha: (formValues as any).bukti_usaha ?? finalData.bukti_usaha ?? null,
+        bukti_niwp: (formValues as any).bukti_nib_npwp ?? finalData.bukti_nib_npwp ?? null,
       };
 
       const apiFormData = new FormData();
@@ -249,8 +246,13 @@ const SmartForm = () => {
       Object.keys(submitData).forEach((key) => {
         const value = submitData[key];
 
-        if (value instanceof File) {
-          apiFormData.append(key, value);
+        if (fileKeys.has(key)) {
+          // Append as binary if File/Blob, otherwise if it's a non-empty string (e.g., existing URL), append as text
+          if (value instanceof File || value instanceof Blob) {
+            apiFormData.append(key, value as Blob);
+          } else if (typeof value === 'string' && value) {
+            apiFormData.append(key, value);
+          }
           return;
         }
 
@@ -258,6 +260,11 @@ const SmartForm = () => {
           apiFormData.append(key, String(value));
         }
       });
+
+      // Debug: verify that files are present before sending (remove if noisy)
+      // apiFormData.forEach((v, k) => {
+      //   console.log('FD', k, v instanceof File ? `File(${v.name})` : String(v));
+      // });
 
       const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_URL}/registrasi_indibiz`,

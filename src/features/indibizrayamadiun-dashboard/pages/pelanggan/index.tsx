@@ -26,17 +26,13 @@ import { Button } from '@/shared/ui/button';
 type SimpleMap = { id: string; nama: string };
 type PaketLite = {
   id: string;
-  nama: string;
-  bandwith?: number | string;
-  price?: number | string;
-  final_price?: number | string;
-  applied_promos?: { id: string; nama: string; diskon?: number }[];
+  label_option: string;
 };
 type SalesLite = {
   id: string;
   nama: string;
   kode_sales?: string;
-  datel_nama?: string;
+  wilayah_nama?: string;
   agency_nama?: string;
 };
 
@@ -151,9 +147,9 @@ export const createColumns = (
     ),
   },
   {
-    accessorKey: 'koordinat',
+    accessorKey: 'kordinat',
     header: () => <span className="font-extrabold">Koordinat</span>,
-    cell: ({ row }) => <div>{row.getValue('koordinat') || '-'}</div>,
+    cell: ({ row }) => <div>{row.getValue('kordinat') || '-'}</div>,
   },
   {
     accessorKey: 'paket_nama',
@@ -351,18 +347,7 @@ export default function ManageRegistrasi() {
   const [sales, setSales] = React.useState<SalesLite[]>([]);
 
   const formatPaketDisplay = React.useCallback((paket?: PaketLite) => {
-    if (!paket) return undefined;
-    const band = paket.bandwith ? `${paket.bandwith} Mbps` : '-';
-    const name = paket.nama || '-';
-    const truncatedName = name.length > 30 ? `${name.slice(0, 30)}…` : name;
-    const promos =
-      paket.applied_promos && paket.applied_promos.length > 0
-        ? ` + Promo(${paket.applied_promos.map((p) => p.nama).join(', ')})`
-        : '';
-    const priceNumber = Number(paket.final_price ?? paket.price ?? 0);
-    const priceText = priceNumber ? priceNumber.toLocaleString('id-ID') : '0';
-    const fullText = `[${band}] ${truncatedName}${promos} (Rp ${priceText})`;
-    return fullText.length > 60 ? `${fullText.slice(0, 60)}…` : fullText;
+    return paket?.label_option;
   }, []);
 
   const formatSalesDisplay = React.useCallback((s?: SalesLite) => s?.nama, []);
@@ -377,11 +362,11 @@ export default function ManageRegistrasi() {
         const salesData = salesMapFull.get(it.sales_id);
         return {
           ...it,
-          datel_nama: datelMap.get(it.datel_id) || undefined,
-          paket_nama: formatPaketDisplay(paket) || paket?.nama,
+          datel_nama: datelMap.get(it.wilayah_id) || undefined,
+          paket_nama: formatPaketDisplay(paket) || paket?.label_option,
           sales_nama: formatSalesDisplay(salesData) || salesData?.nama,
           sales_kode: salesData?.kode_sales,
-          sales_datel_nama: salesData?.datel_nama,
+          sales_datel_nama: salesData?.wilayah_nama,
           sales_agency_nama: salesData?.agency_nama,
         };
       });
@@ -420,7 +405,7 @@ export default function ManageRegistrasi() {
   const fetchDatels = React.useCallback(async () => {
     try {
       const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/datel/list`
+        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`
       );
       setDatels(
         ((res.data as any).data || []).map((d: any) => ({
@@ -441,15 +426,7 @@ export default function ManageRegistrasi() {
       const list: PaketLite[] = ((res.data as any).data || []).map(
         (p: any) => ({
           id: p.id,
-          nama: p.nama,
-          bandwith: p.bandwith,
-          final_price: p.final_price,
-          applied_promos: Array.isArray(p.paket_promos)
-            ? p.paket_promos.map((pp: any) => ({
-                id: pp?.promo?.id,
-                nama: pp?.promo?.nama,
-              }))
-            : [],
+          label_option: p.label_option,
         })
       );
       setPakets(list);
@@ -498,7 +475,7 @@ export default function ManageRegistrasi() {
           id: s.id,
           nama: s.nama,
           kode_sales: s.kode_sales,
-          datel_nama: s.datel?.nama,
+          wilayah_nama: s.wilayah?.nama || s.datel?.nama,
           agency_nama: s.agency?.nama,
         })
       );
@@ -533,7 +510,7 @@ export default function ManageRegistrasi() {
         'No KTP/NIK PIC': it.no_ktp || '-',
         Email: it.email || '-',
         Alamat: it.alamat,
-        Koordinat: (it as any).koordinat || (it as any).kordinat || '-',
+        Koordinat: (it as any).kordinat || (it as any).koordinat || '-',
         Paket: (it as any).paket_nama || '-',
         Sales: (it as any).sales_nama || '-',
         'Foto KTP': (it as any).foto_ktp || '-',
@@ -692,7 +669,7 @@ export default function ManageRegistrasi() {
           id: 'edit-datel_id',
           label: 'Datel Pemasangan',
           type: 'select',
-          value: editing.datel_id,
+          value: editing.wilayah_id,
           onChange: (v) =>
             setEditing((p) => (p ? { ...p, datel_id: v as string } : p)),
           options: datels.map((d) => ({ value: d.id, label: d.nama })),
@@ -707,7 +684,7 @@ export default function ManageRegistrasi() {
             setEditing((p) => (p ? { ...p, paket_id: v as string } : p)),
           options: pakets.map((p) => ({
             value: p.id,
-            label: formatPaketDisplay(p) || p.nama,
+            label: formatPaketDisplay(p) || p.label_option,
           })),
           required: true,
         },
@@ -961,7 +938,7 @@ export default function ManageRegistrasi() {
             try {
               const payload: any = {
                 nama: editing.nama,
-                datel_id: editing.datel_id,
+                datel_id: editing.wilayah_id,
                 paket_id: editing.paket_id,
                 sales_id: editing.sales_id,
                 no_hp_1: editing.no_hp_1,
