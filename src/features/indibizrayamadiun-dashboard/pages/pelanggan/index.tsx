@@ -341,15 +341,13 @@ export default function ManageRegistrasi() {
     total: 0,
     totalPages: 0,
   });
+  const [search, setSearch] = React.useState<string>("");
 
   const [datels, setDatels] = React.useState<SimpleMap[]>([]);
   const [pakets, setPakets] = React.useState<PaketLite[]>([]);
   const [sales, setSales] = React.useState<SalesLite[]>([]);
 
-  const formatPaketDisplay = React.useCallback((paket?: PaketLite) => {
-    return paket?.label_option;
-  }, []);
-
+  const formatPaketDisplay = React.useCallback((paket?: PaketLite) => paket?.label_option, []);
   const formatSalesDisplay = React.useCallback((s?: SalesLite) => s?.nama, []);
 
   const resolveNames = React.useCallback(
@@ -375,13 +373,21 @@ export default function ManageRegistrasi() {
   );
 
   const fetchRegistrasi = React.useCallback(
-    async (page?: number, limit?: number) => {
+    async (page?: number, limit?: number, searchQuery?: string) => {
       setLoading(true);
       try {
         const currentPage = page || pagination.page;
         const currentLimit = limit || pagination.limit;
+        const q = (searchQuery ?? search)?.trim();
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          limit: String(currentLimit),
+        });
+        if (q) {
+          params.set('q', q);
+        }
         const res = await api.get<ApiResult<Pelanggan>>(
-          `${process.env.NEXT_PUBLIC_API_URL}/registrasi_indibiz?page=${currentPage}&limit=${currentLimit}`
+          `${process.env.NEXT_PUBLIC_API_URL}/registrasi_indibiz?${params.toString()}`
         );
         const { data, pagination: pag } = (res.data as any).result;
         setItems(resolveNames(data ?? []));
@@ -399,20 +405,13 @@ export default function ManageRegistrasi() {
         setLoading(false);
       }
     },
-    [resolveNames]
+    [resolveNames, pagination.page, pagination.limit, search]
   );
 
   const fetchDatels = React.useCallback(async () => {
     try {
-      const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`
-      );
-      setDatels(
-        ((res.data as any).data || []).map((d: any) => ({
-          id: d.id,
-          nama: d.nama,
-        }))
-      );
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/wilayah/list`);
+      setDatels(((res.data as any).data || []).map((d: any) => ({ id: d.id, nama: d.nama })));
     } catch (error) {
       console.error('Error fetching datels:', error);
     }
@@ -420,15 +419,8 @@ export default function ManageRegistrasi() {
 
   const fetchPakets = React.useCallback(async () => {
     try {
-      const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/paket/list`
-      );
-      const list: PaketLite[] = ((res.data as any).data || []).map(
-        (p: any) => ({
-          id: p.id,
-          label_option: p.label_option,
-        })
-      );
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/paket/list`);
+      const list: PaketLite[] = ((res.data as any).data || []).map((p: any) => ({ id: p.id, label_option: p.label_option }));
       setPakets(list);
     } catch (error) {
       console.error('Error fetching pakets:', error);
@@ -467,18 +459,14 @@ export default function ManageRegistrasi() {
 
   const fetchSales = React.useCallback(async () => {
     try {
-      const res = await api.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/sales/list`
-      );
-      const list: SalesLite[] = ((res.data as any).data || []).map(
-        (s: any) => ({
-          id: s.id,
-          nama: s.nama,
-          kode_sales: s.kode_sales,
-          wilayah_nama: s.wilayah?.nama || s.datel?.nama,
-          agency_nama: s.agency?.nama,
-        })
-      );
+      const res = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/sales/list`);
+      const list: SalesLite[] = ((res.data as any).data || []).map((s: any) => ({
+        id: s.id,
+        nama: s.nama,
+        kode_sales: s.kode_sales,
+        wilayah_nama: s.wilayah?.nama || s.datel?.nama,
+        agency_nama: s.agency?.nama,
+      }));
       setSales(list);
     } catch (error) {
       console.error('Error fetching sales:', error);
@@ -486,7 +474,7 @@ export default function ManageRegistrasi() {
   }, []);
 
   const handlePaginationChange = (page: number, limit: number) => {
-    fetchRegistrasi(page, limit);
+    fetchRegistrasi(page, limit, search);
   };
 
   const exportToExcel = React.useCallback(async () => {
@@ -498,9 +486,7 @@ export default function ManageRegistrasi() {
       const { data } = (res.data as any).result;
       const resolved = resolveNames(data ?? []);
       const rows = resolved.map((it) => ({
-        'Tanggal Input': new Date(it.created_at as any).toLocaleDateString(
-          'id-ID'
-        ),
+        'Tanggal Input': new Date(it.created_at as any).toLocaleDateString('id-ID'),
         'Datel Pemasangan': (it as any).datel_nama || '-',
         'Nama Usaha': it.nama,
         'Nama PIC': it.nama_pic,
@@ -530,9 +516,7 @@ export default function ManageRegistrasi() {
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Pelanggan');
       const now = new Date();
-      const dateStr = `${now.getFullYear()}-${String(
-        now.getMonth() + 1
-      ).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       XLSX.writeFile(wb, `pelanggan-${dateStr}.xlsx`);
       toast.success('Export Data Pelanggan berhasil');
     } catch (error) {
@@ -557,19 +541,14 @@ export default function ManageRegistrasi() {
   const handleDelete = async (id: string) => {
     setIsSubmitting(true);
     try {
-      const res = await api.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/registrasi_indibiz/${id}`
-      );
+      const res = await api.delete(`${process.env.NEXT_PUBLIC_API_URL}/registrasi_indibiz/${id}`);
       if (res.ok) {
         await fetchRegistrasi();
         toast.success('Registrasi berhasil dihapus');
       }
     } catch (error) {
       console.error('Error deleting registrasi:', error);
-      const errorMessage = getDisplayErrorMessage(
-        error,
-        'Error saat memperbarui paket'
-      );
+      const errorMessage = getDisplayErrorMessage(error, 'Error saat memperbarui paket');
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -625,8 +604,7 @@ export default function ManageRegistrasi() {
       label: 'Status',
       type: 'select',
       value: validationForm.status as string,
-      onChange: (value) =>
-        setValidationForm((p) => ({ ...p, status: value as any })),
+      onChange: (value) => setValidationForm((p) => ({ ...p, status: value as any })),
       options: [
         { value: 'PS', label: 'PS' },
         { value: 'CANCEL', label: 'CANCEL' },
@@ -648,8 +626,7 @@ export default function ManageRegistrasi() {
       label: 'Nomor AO',
       type: 'text',
       value: validationForm.nomer_ao || '',
-      onChange: (value) =>
-        setValidationForm((p) => ({ ...p, nomer_ao: value })),
+      onChange: (value) => setValidationForm((p) => ({ ...p, nomer_ao: value })),
       placeholder: 'Masukkan nomor AO',
     },
     {
@@ -657,8 +634,7 @@ export default function ManageRegistrasi() {
       label: 'Keterangan',
       type: 'textarea',
       value: validationForm.keterangan || '',
-      onChange: (value) =>
-        setValidationForm((p) => ({ ...p, keterangan: value })),
+      onChange: (value) => setValidationForm((p) => ({ ...p, keterangan: value })),
       placeholder: 'Tambahkan keterangan validasi (opsional)',
     },
   ];
@@ -670,8 +646,7 @@ export default function ManageRegistrasi() {
           label: 'Datel Pemasangan',
           type: 'select',
           value: editing.wilayah_id,
-          onChange: (v) =>
-            setEditing((p) => (p ? { ...p, datel_id: v as string } : p)),
+          onChange: (v) => setEditing((p) => (p ? { ...p, datel_id: v as string } : p)),
           options: datels.map((d) => ({ value: d.id, label: d.nama })),
           required: true,
         },
@@ -680,12 +655,8 @@ export default function ManageRegistrasi() {
           label: 'Paket',
           type: 'select',
           value: editing.paket_id,
-          onChange: (v) =>
-            setEditing((p) => (p ? { ...p, paket_id: v as string } : p)),
-          options: pakets.map((p) => ({
-            value: p.id,
-            label: formatPaketDisplay(p) || p.label_option,
-          })),
+          onChange: (v) => setEditing((p) => (p ? { ...p, paket_id: v as string } : p)),
+          options: pakets.map((p) => ({ value: p.id, label: formatPaketDisplay(p) || p.label_option })),
           required: true,
         },
         {
@@ -693,8 +664,7 @@ export default function ManageRegistrasi() {
           label: 'Sales',
           type: 'select',
           value: editing.sales_id,
-          onChange: (v) =>
-            setEditing((p) => (p ? { ...p, sales_id: v as string } : p)),
+          onChange: (v) => setEditing((p) => (p ? { ...p, sales_id: v as string } : p)),
           options: sales.map((s) => ({ value: s.id, label: s.nama })),
           required: true,
         },
@@ -774,9 +744,7 @@ export default function ManageRegistrasi() {
               <CustomFileInput
                 id="edit-foto_ktp"
                 value={(editing as any).foto_ktp as any}
-                onChange={(file: File | null) =>
-                  setEditing((p) => (p ? { ...p, foto_ktp: file as any } : p))
-                }
+                onChange={(file: File | null) => setEditing((p) => (p ? { ...p, foto_ktp: file as any } : p))}
               />
             </div>
           ),
@@ -790,11 +758,7 @@ export default function ManageRegistrasi() {
               <CustomFileInput
                 id="edit-foto_selfie"
                 value={(editing as any).foto_selfie as any}
-                onChange={(file: File | null) =>
-                  setEditing((p) =>
-                    p ? { ...p, foto_selfie: file as any } : p
-                  )
-                }
+                onChange={(file: File | null) => setEditing((p) => (p ? { ...p, foto_selfie: file as any } : p))}
               />
             </div>
           ),
@@ -808,11 +772,7 @@ export default function ManageRegistrasi() {
               <CustomFileInput
                 id="edit-bukti_usaha"
                 value={(editing as any).bukti_usaha as any}
-                onChange={(file: File | null) =>
-                  setEditing((p) =>
-                    p ? { ...p, bukti_usaha: file as any } : p
-                  )
-                }
+                onChange={(file: File | null) => setEditing((p) => (p ? { ...p, bukti_usaha: file as any } : p))}
               />
             </div>
           ),
@@ -826,9 +786,7 @@ export default function ManageRegistrasi() {
               <CustomFileInput
                 id="edit-bukti_niwp"
                 value={(editing as any).bukti_niwp as any}
-                onChange={(file: File | null) =>
-                  setEditing((p) => (p ? { ...p, bukti_niwp: file as any } : p))
-                }
+                onChange={(file: File | null) => setEditing((p) => (p ? { ...p, bukti_niwp: file as any } : p))}
               />
             </div>
           ),
@@ -842,11 +800,7 @@ export default function ManageRegistrasi() {
               <CustomFileInput
                 id="edit-foto_lokasi"
                 value={(editing as any).foto_lokasi as any}
-                onChange={(file: File | null) =>
-                  setEditing((p) =>
-                    p ? { ...p, foto_lokasi: file as any } : p
-                  )
-                }
+                onChange={(file: File | null) => setEditing((p) => (p ? { ...p, foto_lokasi: file as any } : p))}
               />
             </div>
           ),
@@ -868,6 +822,14 @@ export default function ManageRegistrasi() {
       fetchRegistrasi();
     }
   }, [datels.length, pakets.length, sales.length]);
+
+  // Debounce pencarian dan fetch ke server dengan query `search`
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      fetchRegistrasi(1, pagination.limit, search);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search, pagination.limit, fetchRegistrasi]);
 
   return (
     <>
@@ -902,9 +864,7 @@ export default function ManageRegistrasi() {
                     onChange={(file) => setImportFile(file)}
                     accept=".xls,.xlsx,.csv"
                   />
-                  <div className="text-xs text-gray-500 mt-2">
-                    Format: .xls, .xlsx
-                  </div>
+                  <div className="text-xs text-gray-500 mt-2">Format: .xls, .xlsx</div>
                 </div>
               ),
             } as FormField,
@@ -952,10 +912,7 @@ export default function ManageRegistrasi() {
               };
               const formData = new FormData();
               Object.entries(payload).forEach(([key, value]) => {
-                formData.append(
-                  key,
-                  value !== undefined && value !== null ? String(value) : ''
-                );
+                formData.append(key, value !== undefined && value !== null ? String(value) : '');
               });
               const res = await api.put(
                 `${process.env.NEXT_PUBLIC_API_URL}/registrasi_indibiz/${editing.id}`,
@@ -987,11 +944,14 @@ export default function ManageRegistrasi() {
           searchKey="nama"
           searchPlaceholder="Cari pelanggan..."
           emptyMessage="Tidak ada data Pelanggan"
-          loadingComponent={
-            <TableSkeleton rows={10} columns={registrasiSkeletonColumns} />
-          }
+          loadingComponent={<TableSkeleton rows={10} columns={registrasiSkeletonColumns} />}
           pagination={pagination}
           onPaginationChange={handlePaginationChange}
+          searchValue={search}
+          onSearchChange={(v) => {
+            setSearch(v)
+            setPagination((p) => ({ ...p, page: 1 }))
+          }}
         />
       </Main>
     </>

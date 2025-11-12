@@ -6,7 +6,6 @@ import {
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -52,6 +51,8 @@ interface DataTableProps<TData, TValue> {
   pagination: ServerPaginationState
   onPaginationChange: (page: number, limit: number) => void
   bulkActions?: (selectedCount: number, selectedRows: TData[]) => React.ReactNode
+  searchValue?: string
+  onSearchChange?: (value: string) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -68,6 +69,8 @@ export function DataTable<TData, TValue>({
   pagination,
   onPaginationChange,
   bulkActions,
+  searchValue,
+  onSearchChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -80,7 +83,6 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), 
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -156,10 +158,11 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center justify-between py-4 gap-3 flex-wrap">
           <Input
             placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn(searchKey)?.setFilterValue(event.target.value)
-            }
+            value={searchValue ?? ""}
+            onChange={(event) => {
+              const v = event.target.value
+              onSearchChange?.(v)
+            }}
             className="max-w-sm"
           />
           {bulkActions && selectedCount > 0 && (
@@ -252,9 +255,6 @@ export function DataTable<TData, TValue>({
             
             <div className="text-xs sm:text-sm text-muted-foreground">
               Showing {startEntry} to {endEntry} of {pagination.total} entries
-              {table.getFilteredRowModel().rows.length !== data.length && 
-                ` (${table.getFilteredRowModel().rows.length} filtered)`
-              }
             </div>
           </div>
           
